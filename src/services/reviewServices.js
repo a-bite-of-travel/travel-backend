@@ -16,8 +16,20 @@ const findPostById = async (id) => {
     return await reviewModel.findPostById(id);
 }
 
+//리뷰 수정
+const updatePost = async (id, data) => {
+    return await reviewModel.updatePost(id, data);
+}
+
+//리뷰 삭제
+const deletePost = async (id) => {
+    return await reviewModel.deletePost(id);
+}
+
 module.exports ={
     createReview,
     findAll,
-    findPostById
+    findPostById,
+    updatePost,
+    deletePost
 };
