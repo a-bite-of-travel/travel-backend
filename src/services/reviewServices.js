@@ -7,8 +7,13 @@ const createReview = async(data) =>{
 };
 
 //리뷰 목록조회
-const findAll = async() =>{
-    return await reviewModel.findAll();
+const findAll = async(page, limit) =>{
+
+    const review = await reviewModel.findAll();
+    const totalPosts = review.length; //배열의 길이 사용
+    const totalPages = Math.ceil(totalPosts / limit); // 전체 페이지 수 계산
+
+    return { review, totalPosts, totalPages, current: page }
 }
 
 //리뷰 아이디로 조회
@@ -26,10 +31,19 @@ const deletePost = async (id) => {
     return await reviewModel.deletePost(id);
 }
 
+//댓글 달기
+const createComment = async (id, data) =>{
+    return await reviewModel.createComment(id, data);
+}
+
+
+
+
 module.exports ={
     createReview,
     findAll,
     findPostById,
     updatePost,
-    deletePost
+    deletePost,
+    createComment,
 };

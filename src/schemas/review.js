@@ -6,6 +6,10 @@ const reviewSchema = new Schema({
     content: String,
     imageUrl: [String],
     tags:[String],
+    comments:[{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Comment',
+    }],
     userId: mongoose.Types.ObjectId,
     itineraryId: mongoose.Types.ObjectId,
     createdAt: { type: Date, default: Date.now },
