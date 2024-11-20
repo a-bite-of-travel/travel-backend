@@ -33,7 +33,16 @@ const createComment = async (id, data) =>{
         content: data.content,
         reviewId: id
     });
-    return await newComment.save();
+    const savedComment = await newComment.save();
+
+    const updatedReview = await reviewModel.findByIdAndUpdate(
+        id, 
+        { $push: { comments: savedComment._id } },  // savedComment._id로 댓글 추가
+        { new: true }  // 업데이트된 리뷰를 반환
+    );
+    console.log('Updated Review:', updatedReview);
+
+    return savedComment;
 }
 
 
