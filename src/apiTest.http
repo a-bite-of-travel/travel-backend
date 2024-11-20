@@ -1,0 +1,12 @@
+GET localhost:3500/tour/code
+
+###
+GET localhost:3500/travel
+Content-Type: application/json
+
+{
+  "region":  "2",
+  "startDate":  "2024-11-20",
+  "duration":  "하루",
+  "theme": "12"
+}
