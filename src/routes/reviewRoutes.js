@@ -9,6 +9,7 @@ router.get('/:id', reviewController.findPostById); //리뷰 아이디로 조회
 router.put('/:id', reviewController.updatePost); //리뷰 수정
 router.delete('/:id', reviewController.deletePost); //리뷰 삭제
 router.put('/:id/comments', reviewController.createComment); //댓글 달기
-
+router.put('/comments/:id', reviewController.updateComment); //댓글 수정
+router.delete('/comments/:id', reviewController.deleteComment); // 댓글 삭제
 
 module.exports = router;

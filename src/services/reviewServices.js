@@ -1,4 +1,5 @@
 const reviewModel = require('../models/reviewModel');
+const commentModel = require('../schemas/comment');
 
 //리뷰 작성
 const createReview = async(data) =>{
@@ -36,7 +37,27 @@ const createComment = async (id, data) =>{
     return await reviewModel.createComment(id, data);
 }
 
+//댓글 수정
+const updateComment = async (id, data) => {
+    const updatedComment = await commentModel.findByIdAndUpdate(
+        id,
+        { $set: data }, // 업데이트할 데이터
+        { new: true }   // 수정된 문서 반환
+    );
+    if (!updatedComment) {
+        throw new Error('Comment not found');
+    }
+    return updatedComment;
+};
 
+//댓글 삭제
+const deleteComment = async (id) => {
+    const deletedComment = await commentModel.findByIdAndDelete(id);
+    if (!deletedComment) {
+        throw new Error('Comment not found');
+    }
+    return deletedComment;
+};
 
 
 module.exports ={
@@ -46,4 +67,6 @@ module.exports ={
     updatePost,
     deletePost,
     createComment,
+    updateComment,
+    deleteComment
 };

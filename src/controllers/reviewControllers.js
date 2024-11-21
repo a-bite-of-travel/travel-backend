@@ -74,6 +74,29 @@ const createComment = async(req, res) =>{
     }
 }
 
+//댓글 수정
+const updateComment = async (req, res) => {
+    try{
+        const { id } = req.params;       
+        const updatedComment  = await reviewService.updateComment(id, req.body);
+        res.status(200).json({message:'ok', data: updatedComment});
+    }catch(e){
+        res.status(500).json({message: 'error', data:e.message});
+    }
+}
+
+//댓글 삭제
+const deleteComment = async (req, res) => {
+    const { id } = req.params;
+    try{   
+        const deletedComment = await reviewService.deleteComment(id);
+        res.status(204).json({message:'ok', data: deletedComment });
+    }catch(e){
+        res.status(500).json({message: 'error', data:e.message});
+    }
+}
+
+
 module.exports ={
     createReview,
     findAll,
@@ -81,4 +104,6 @@ module.exports ={
     updatePost,
     deletePost,
     createComment,
+    updateComment,
+    deleteComment 
 }

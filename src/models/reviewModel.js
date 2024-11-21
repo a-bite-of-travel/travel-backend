@@ -40,15 +40,18 @@ const createComment = async (id, data) =>{
         { $push: { comments: savedComment._id } },  // savedComment._id로 댓글 추가
         { new: true }  // 업데이트된 리뷰를 반환
     );
-    console.log('Updated Review:', updatedReview);
-
     return savedComment;
 }
 
-
 //댓글 수정
+const updateComment = async (id, data) =>{
+    return await reviewModel.updateComment(id, data);
+}
 
 //댓글 삭제
+const deleteComment = async (id, data) =>{
+    return await reviewModel.deleteComment(id, data);
+}
 
 module.exports  = { 
     createReview,
@@ -57,4 +60,6 @@ module.exports  = {
     updatePost,
     deletePost,
     createComment,
+    updateComment,
+    deleteComment
 };
