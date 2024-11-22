@@ -6,12 +6,16 @@ const jwt = require("jsonwebtoken");
 
 //회원가입
 const register = async (req, res) => {
-    const { email, password } = req.body;
-
+    const { email, password, confirmPassword, nickName, profile_img } = req.body;
+    
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array().map(e => e.msg) })
+        }
+
+        if (password !== confirmPassword) {
+            return res.status(400).json({ message: "비밀번호가 서로 일치하지 않습니다." });
         }
 
         // 이메일 중복 체크
@@ -23,7 +27,10 @@ const register = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const user = await userService.createUser({
-            email: email, password: hashedPassword,
+            email: email,
+            password: hashedPassword,
+            nickName: nickName,
+            profile_img: profile_img
         });
         res.status(201).json({ data: user, message: '회원가입 성공' })
     } catch (err) {
@@ -37,6 +44,10 @@ const login = async (req, res) => {
     const { email, password } = req.body;
     try {
         const user = await userService.findUserByEmail(email);
+        if (user && user.isDisabled) {
+            return res.status(403).json({ message: "이 계정은 비활성화되었습니다." });
+        }
+
         if (!user) {
             return res.status(400).json({ message: "이메일 또는 비밀번호가 올바르지 않습니다." });
         }
@@ -48,11 +59,12 @@ const login = async (req, res) => {
 
         const accessToken = generateAccessToken(user);
         const refreshToken = generateRefreshToken(user);
-        res.status(200).json({ 
+
+        res.status(200).json({
             id: user._id,
             email: user.email,
-            accessToken, 
-            refreshToken 
+            accessToken,
+            refreshToken
         })
     } catch (e) {
         res.status(500).json({ message: e.message })
@@ -71,6 +83,32 @@ const refresh = async (req, res) => {
     })
 }
 
+//로그아웃
+const logout = async (req, res) => {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+        return res.status(401).json({ message: "토큰이 필요합니다." });
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    try {
+        jwt.verify(token, 'access'); // 
+        res.status(200).json({ message: "로그아웃이 완료되었습니다." });
+    } catch (err) {
+        console.error("로그아웃 실패:", err.message);
+
+        if (err.name === "JsonWebTokenError" || err.name === "TokenExpiredError") {
+            return res.status(403).json({ message: "유효하지 않은 토큰입니다." });
+        }
+
+        res.status(500).json({ message: "서버 오류가 발생했습니다." });
+    }
+};
+
+
+//회원탈퇴
 const deleteUser = async (req, res) => {
     const authHeader = req.headers.authorization;
 
@@ -106,5 +144,6 @@ module.exports = {
     register,
     login,
     refresh,
-    deleteUser
+    logout,
+    deleteUser,
 }
