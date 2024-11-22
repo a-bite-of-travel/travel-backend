@@ -4,18 +4,28 @@ const userService = require('../services/userService');
 const { validationResult } = require("express-validator");
 const jwt = require("jsonwebtoken");
 
+
 //회원가입
 const register = async (req, res) => {
-    const { email, password, confirmPassword, nickName, profile_img } = req.body;
-    
+    console.log('register')
+    const { email, password, confirmPassword, nickName } = req.body;
+    console.log('register', req.file);
+    const profile_img = req.file; 
+    console.log('register', profile_img)
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array().map(e => e.msg) })
         }
-
+        
         if (password !== confirmPassword) {
             return res.status(400).json({ message: "비밀번호가 서로 일치하지 않습니다." });
+        }
+        
+        // 탈퇴한 회원
+        const deletedUser = await userService.findUserByEmail(email);
+        if (deletedUser && deletedUser.isDisabled) {
+            return res.status(403).json({ message: "이 계정은 비활성화되었습니다." });
         }
 
         // 이메일 중복 체크
@@ -23,14 +33,14 @@ const register = async (req, res) => {
         if (existingUser) {
             return res.status(400).json({ message: "이미 사용 중인 이메일입니다." });
         }
-
         const hashedPassword = await bcrypt.hash(password, 10);
-
+        console.log(profile_img);
         const user = await userService.createUser({
             email: email,
             password: hashedPassword,
+            confirmPassword : hashedPassword,
             nickName: nickName,
-            profile_img: profile_img
+            profile_img: profile_img ? profile_img.path : null 
         });
         res.status(201).json({ data: user, message: '회원가입 성공' })
     } catch (err) {
