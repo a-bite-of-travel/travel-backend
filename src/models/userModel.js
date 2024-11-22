@@ -9,7 +9,16 @@ const findUserByEmail = async (email) => {
     return await userModel.findOne({ email });
 };
 
+const findByIdAndUpdate = async (userId) => {
+      return await userModel.findByIdAndUpdate(
+        userId, 
+        { isDisabled: true, deletedAt: new Date() }, 
+        { new: true }
+    );
+};
+
 module.exports = {
     createUser,
-    findUserByEmail
+    findUserByEmail,
+    findByIdAndUpdate
 };

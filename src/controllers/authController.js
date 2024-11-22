@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const { generateAccessToken, generateRefreshToken } = require('../utils/token');
 const userService = require('../services/userService');
 const { validationResult } = require("express-validator");
+const jwt = require("jsonwebtoken");
 
 //회원가입
 const register = async (req, res) => {
@@ -13,11 +14,11 @@ const register = async (req, res) => {
             return res.status(400).json({ errors: errors.array().map(e => e.msg) })
         }
 
-         // 이메일 중복 체크
-         const existingUser = await userService.findUserByEmail(email);
-         if (existingUser) {
-             return res.status(400).json({ message: "이미 사용 중인 이메일입니다." });
-         }
+        // 이메일 중복 체크
+        const existingUser = await userService.findUserByEmail(email);
+        if (existingUser) {
+            return res.status(400).json({ message: "이미 사용 중인 이메일입니다." });
+        }
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -47,14 +48,18 @@ const login = async (req, res) => {
 
         const accessToken = generateAccessToken(user);
         const refreshToken = generateRefreshToken(user);
-        res.status(200).json({ accessToken, refreshToken })
+        res.status(200).json({ 
+            id: user._id,
+            email: user.email,
+            accessToken, 
+            refreshToken 
+        })
     } catch (e) {
         res.status(500).json({ message: e.message })
     }
 };
 
 //토큰갱신
-const jwt = require("jsonwebtoken");
 const refresh = async (req, res) => {
     const { token } = req.body; //refresh token
     if (!token) return res.sendStatus(401);
@@ -66,8 +71,40 @@ const refresh = async (req, res) => {
     })
 }
 
+const deleteUser = async (req, res) => {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+        return res.status(401).json({ message: "토큰이 필요합니다." });
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    try {
+        const decoded = jwt.verify(token, 'access'); // JWT 검증
+        const userId = decoded.id;
+
+        const result = await userService.softDeleteUser(userId);
+
+        if (!result) {
+            return res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+        }
+
+        res.status(200).json({ message: "회원탈퇴가 완료되었습니다.", data: result });
+    } catch (err) {
+        console.error("회원탈퇴 실패:", err.message);
+
+        if (err.name === "JsonWebTokenError" || err.name === "TokenExpiredError") {
+            return res.status(403).json({ message: "유효하지 않은 토큰입니다." });
+        }
+
+        res.status(500).json({ message: "서버 오류가 발생했습니다." });
+    }
+};
+
 module.exports = {
     register,
     login,
     refresh,
+    deleteUser
 }

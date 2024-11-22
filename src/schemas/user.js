@@ -7,7 +7,8 @@ const userSchema = new Schema({
     profile_img: Buffer,
     nickName: String,
     joinedDate: { type: Date, default: Date.now },
-    isDisabled: { type: Boolean, default: false }
+    isDisabled: { type: Boolean, default: false },
+    deletedAt: { type: Date, default: null }
 });
 
 module.exports = mongoose.model('User', userSchema);
