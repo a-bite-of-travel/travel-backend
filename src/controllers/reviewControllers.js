@@ -3,13 +3,7 @@ const reviewService = require('../services/reviewServices');
 //리뷰 작성
 const createReview = async(req, res) =>{
     try{
-        const {title, content, imageUrl, tags} = req.body;
-        const post = await reviewService.createReview({
-            title: title,
-            content: content,
-            imageUrl: imageUrl,
-            tags:tags,
-        });
+        const post = await reviewService.createReview(req.body);
         res.status(200).json({message:'ok', data: post});
     }catch(e){
         res.status(500).json({message: 'error', data:e.message});
@@ -23,18 +17,10 @@ const findAll = async (req, res) => {
     try {
         // 전체 데이터 조회 (배열로 반환)
         const posts = await reviewService.findAll(page, limit);
-        
-        const totalPosts = posts.length;  // 배열의 길이 사용
-        
-        // 전체 페이지 수 계산
-        const totalPages = Math.ceil(totalPosts / limit);
-        
+
         res.status(200).json({
             message: 'ok',
-            data: posts,
-            totalPosts,
-            totalPages,
-            currentPage: page,
+            data: posts
         });
     } catch (e) {
         res.status(500).json({ message: 'error', data: e.message });
@@ -73,10 +59,51 @@ const deletePost = async (req, res) => {
     }
 }
 
+//댓글 달기
+const createComment = async(req, res) =>{
+    try{
+        const id = req.params.id;
+        const { content } = req.body;
+        if (!content) {
+            return res.status(400).json({ message: '댓글 내용이 필요합니다.' });
+        }
+        const post = await reviewService.createComment(id, req.body);
+        res.status(200).json({message:'ok', data: post});
+    }catch(e){
+        res.status(500).json({message: 'error', data:e.message});
+    }
+}
+
+//댓글 수정
+const updateComment = async (req, res) => {
+    try{
+        const { id } = req.params;       
+        const updatedComment  = await reviewService.updateComment(id, req.body);
+        res.status(200).json({message:'ok', data: updatedComment});
+    }catch(e){
+        res.status(500).json({message: 'error', data:e.message});
+    }
+}
+
+//댓글 삭제
+const deleteComment = async (req, res) => {
+    const { id } = req.params;
+    try{   
+        const deletedComment = await reviewService.deleteComment(id);
+        res.status(204).json({message:'ok', data: deletedComment });
+    }catch(e){
+        res.status(500).json({message: 'error', data:e.message});
+    }
+}
+
+
 module.exports ={
     createReview,
     findAll,
     findPostById,
     updatePost,
-    deletePost
+    deletePost,
+    createComment,
+    updateComment,
+    deleteComment 
 }
