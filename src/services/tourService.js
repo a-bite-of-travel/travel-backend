@@ -1,5 +1,5 @@
-const { tourApi, gptAI } = require('../utility/api');
-const { tourCodeFilter, setTourInfoCond, tourApiGetDetailInfo } = require('../utility/tourSubFunc');
+const { tourApi, gptAI } = require('../utils/api');
+const { tourCodeFilter, setTourInfoCond, tourApiGetDetailInfo } = require('../utils/tourSubFunc');
 const tourModel = require('../models/tourModel');
 const waait = require('waait');
 
