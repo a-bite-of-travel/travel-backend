@@ -1,11 +1,14 @@
 const userModel = require("../models/userModel");
 const mongoose = require('mongoose');
 
+const findAll = async () => {
+    return await userModel.findAll();
+}
 const createUser = async (userData) => {
     return await userModel.createUser(userData);
 }
 
-const findUserByEmail = async(email) =>{
+const findUserByEmail = async (email) => {
     return await userModel.findUserByEmail(email);
 }
 
@@ -15,14 +18,15 @@ const softDeleteUser = async (userId) => {
     }
 
     return await userModel.findByIdAndUpdate(
-        userId, 
-        { isDisabled: true, deletedAt: new Date() }, 
+        userId,
+        { isDisabled: true, deletedAt: new Date() },
         { new: true }
     );
 };
 
 module.exports = {
+    findAll,
     createUser,
     findUserByEmail,
-    softDeleteUser
+    softDeleteUser,
 }

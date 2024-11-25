@@ -5,8 +5,10 @@ const mongoose = require('./configs/mongoose-config');
 const tourRoute = require('./src/routes/tourRoute');
 const userRoute = require('./src/routes/userRoute');
 const authRoute = require('./src/routes/authRoute');
-
+const path = require('path');
 const app = express();
+
+app.use("/downloads", express.static(path.join(__dirname, "public/uploads")));
 
 const postRoutes = require('./src/routes/reviewRoutes');
 
