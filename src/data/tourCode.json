@@ -1,0 +1,215 @@
+[
+  {
+    "code": 1,
+    "name": "강남구",
+    "type": "sigungu"
+  },
+  {
+    "code": 2,
+    "name": "강동구",
+    "type": "sigungu"
+  },
+  {
+    "code": 3,
+    "name": "강북구",
+    "type": "sigungu"
+  },
+  {
+    "code": 4,
+    "name": "강서구",
+    "type": "sigungu"
+  },
+  {
+    "code": 5,
+    "name": "관악구",
+    "type": "sigungu"
+  },
+  {
+    "code": 6,
+    "name": "광진구",
+    "type": "sigungu"
+  },
+  {
+    "code": 7,
+    "name": "구로구",
+    "type": "sigungu"
+  },
+  {
+    "code": 8,
+    "name": "금천구",
+    "type": "sigungu"
+  },
+  {
+    "code": 9,
+    "name": "노원구",
+    "type": "sigungu"
+  },
+  {
+    "code": 10,
+    "name": "도봉구",
+    "type": "sigungu"
+  },
+  {
+    "code": 11,
+    "name": "동대문구",
+    "type": "sigungu"
+  },
+  {
+    "code": 12,
+    "name": "동작구",
+    "type": "sigungu"
+  },
+  {
+    "code": 13,
+    "name": "마포구",
+    "type": "sigungu"
+  },
+  {
+    "code": 14,
+    "name": "서대문구",
+    "type": "sigungu"
+  },
+  {
+    "code": 15,
+    "name": "서초구",
+    "type": "sigungu"
+  },
+  {
+    "code": 16,
+    "name": "성동구",
+    "type": "sigungu"
+  },
+  {
+    "code": 17,
+    "name": "성북구",
+    "type": "sigungu"
+  },
+  {
+    "code": 18,
+    "name": "송파구",
+    "type": "sigungu"
+  },
+  {
+    "code": 19,
+    "name": "양천구",
+    "type": "sigungu"
+  },
+  {
+    "code": 20,
+    "name": "영등포구",
+    "type": "sigungu"
+  },
+  {
+    "code": 21,
+    "name": "용산구",
+    "type": "sigungu"
+  },
+  {
+    "code": 22,
+    "name": "은평구",
+    "type": "sigungu"
+  },
+  {
+    "code": 23,
+    "name": "종로구",
+    "type": "sigungu"
+  },
+  {
+    "code": 24,
+    "name": "중구",
+    "type": "sigungu"
+  },
+  {
+    "code": 25,
+    "name": "중랑구",
+    "type": "sigungu"
+  },
+  {
+    "code": 1000,
+    "name": "하루",
+    "type": "period"
+  },
+  {
+    "code": 1001,
+    "name": "1박2일",
+    "type": "period"
+  },
+  {
+    "code": 1002,
+    "name": "2박3일",
+    "type": "period"
+  },
+  {
+    "code": 2000,
+    "name": "자연 즐기기",
+    "type": "theme",
+    "cond": [
+      {
+        "cat2": "A0101"
+      }
+    ]
+  },
+  {
+    "code": 2001,
+    "name": "역사탐방",
+    "type": "theme",
+    "cond": [
+      {
+        "cat2": "A0201"
+      }
+    ]
+  },
+  {
+    "code": 2002,
+    "name": "문화와 건축",
+    "type": "theme",
+    "cond": [
+      {
+        "cat2": "A0205"
+      }
+    ]
+  },
+  {
+    "code": 2003,
+    "name": "체험활동",
+    "type": "theme",
+    "cond": [
+      {
+        "cat2": "A0203"
+      }
+    ]
+  },
+  {
+    "code": 2004,
+    "name": "신나게 놀기",
+    "type": "theme",
+    "cond": [
+      {
+        "cat2": "A0202"
+      }
+    ]
+  },
+  {
+    "code": 2005,
+    "name": "엑티비티",
+    "type": "theme",
+    "cond": [
+      {
+        "cat1": "A03"
+      },
+      {
+        "cat3": ["A03021700", "A03020200", "A03021000"]
+      }
+    ]
+  },
+  {
+    "code": 2006,
+    "name": "전통시장",
+    "type": "theme",
+    "cond": [
+      {
+        "cat3": ["A04010100", "A04010200"]
+      }
+    ]
+  }
+]

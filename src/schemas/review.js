@@ -4,7 +4,12 @@ const { Schema } = require('mongoose');
 const reviewSchema = new Schema({
     title: String,
     content: String,
-    images: Buffer,
+    imageUrl: [String],
+    tags:[String],
+    comments:[{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Comment',
+    }],
     userId: mongoose.Types.ObjectId,
     itineraryId: mongoose.Types.ObjectId,
     createdAt: { type: Date, default: Date.now },
