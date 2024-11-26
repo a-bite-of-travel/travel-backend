@@ -9,7 +9,7 @@ const createReview = async(data) =>{
 
 //리뷰 목록조회
 const findAll = async () => {
-    return await reviewModel.find().select('title content imageUrl tags createdAt');
+    return await reviewModel.find().select('title content imageUrl tags status createdAt');
 }
 
 //리뷰 아이디로 조회
