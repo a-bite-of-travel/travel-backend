@@ -14,8 +14,15 @@ const insertTourInfo = async (data) => {
 }
 
 // 여행정보 출력
-const selectTourInfoList = async (cond) => {
-    return await tourInfoModel.find(cond);
+const selectTourInfoList = async (cond, skip) => {
+    return await tourInfoModel.find(cond)
+        .sort({title: 1})
+        .skip(skip)
+        .limit(20);
+}
+
+const getTourInfoTotalCount = async (cond) => {
+    return await tourInfoModel.countDocuments(cond);
 }
 
 // 여행 상세정보 조회
@@ -35,11 +42,17 @@ const insertTourPlan = async (data) => {
     return await insertTourPlan.save();
 }
 
+const getTourPlanTotalCount = async (cond) => {
+    return await tourPlanModel.countDocuments(cond);
+}
+
 module.exports = {
     selectTourCodeList,
     insertTourInfo,
     selectTourInfoList,
+    getTourInfoTotalCount,
     selectTourDetailInfoList,
     insertTourDetailInfo,
-    insertTourPlan
+    insertTourPlan,
+    getTourPlanTotalCount
 }

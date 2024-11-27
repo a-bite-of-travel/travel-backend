@@ -11,4 +11,4 @@ Content-Type: application/json
   "theme": [ { "code": 2006, "name": "전통시장" }]
 }
 ###
-POST localhost:3500/tour/info
+GET localhost:3500/tour/info?contenttypeid=관광지&page=1&searchText=치킨
