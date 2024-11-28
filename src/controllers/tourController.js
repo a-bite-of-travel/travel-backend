@@ -30,8 +30,8 @@ const insertTourPlan = async (req, res) => {
 
 
 const getTourInfoList = async (req, res) => {
-    const { contenttypeid, page, region, cat, catValue,searchText } = req.query;
-    const data = await tourService.getTourInfoList(contenttypeid, page, region, cat, catValue,searchText);
+    const { contentType, page, region, cat, catValue,searchText } = req.query;
+    const data = await tourService.getTourInfoList(contentType, page, region, cat, catValue,searchText);
 
     res.status(200).json({message: 'ok', data});
 }

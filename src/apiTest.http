@@ -12,3 +12,6 @@ Content-Type: application/json
 }
 ###
 GET localhost:3500/tour/info?contenttypeid=관광지&page=1&searchText=치킨
+
+###
+GET http://localhost:3500/tour/info?contenttypeid=관광지&page=1
