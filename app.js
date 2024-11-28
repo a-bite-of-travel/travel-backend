@@ -4,9 +4,18 @@ require('dotenv').config();
 const mongoose = require('./configs/mongoose-config');
 const tourRoute = require('./src/routes/tourRoute');
 const userRoute = require('./src/routes/userRoute');
-const authRoute = require('./src/routes/authRoute');
+const authRoute = require('./src/routes/authRoute');  
 const path = require('path');
+const cors = require("cors");
 const app = express();
+
+app.use(
+   cors({
+     origin: "http://localhost:3000", // React 앱 주소
+     methods: ["GET", "POST", "PUT", "DELETE"], // 허용할 HTTP 메서드
+     credentials: true, // 쿠키, 인증 정보를 포함하려면 설정
+   })
+ );
 
 app.use("/downloads", express.static(path.join(__dirname, "public/uploads")));
 
