@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require("cors");
 require('dotenv').config();
 
 const mongoose = require('./configs/mongoose-config');
@@ -11,6 +12,7 @@ const app = express();
 
 app.use("/downloads", express.static(path.join(__dirname, "public/uploads")));
 
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use("/users",userRoute);
