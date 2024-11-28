@@ -63,7 +63,7 @@ const getTourInfo = async (sigunguCode, startDate, period, theme) => {
     let themeCodeCond = await tourModel.selectTourCodeList({code: { $in: themeCode }});
 
     const cond = setTourInfoCond(themeCodeCond, sigunguCode.code); // tourInfoList 찾을 condition 생성 후 반환
-    let tourInfoList = await tourModel.selectTourInfoList(cond);
+    let tourInfoList = await tourModel.selectTourInfoList(cond, 0, 0);
 
     // gpt로 여헹일정 생성을 위한 contentid 받아오기.
     // 여행 정보 전달 시에 gpt가 답변하기 위해 필요한 핵심 정보만을 추려서 전송하기
@@ -98,9 +98,38 @@ const insertTourPlan = async (data) => {
     return await tourModel.insertTourPlan(data);
 }
 
+// 여행정보 출력
+const getTourInfoList = async (contentType, page, region, cat, catValue,searchText) => {
+    const cond = {}
+
+    if(contentType === "관광지")
+        cond.contenttypeid = { $ne: 39 };
+    else
+        cond.contenttypeid = 39;
+
+    const regex = (pattern) => new RegExp(`.*${pattern}.*`);
+
+    if(searchText)
+        cond.title = { $regex: regex(searchText)};
+
+    if(region)
+        cond.sigungucode = { $in: region.split(',')};
+
+    if(cat)
+        cond[cat] = { "$in": catValue.split(',')};
+
+    const skip = 20 * (page - 1);
+
+    const totalCount = await tourModel.getTourInfoTotalCount(cond);
+    const tourInfoList = await tourModel.selectTourInfoList(cond, skip);
+
+    return {items: tourInfoList, totalCount}
+}
+
 module.exports = {
     getTourCodes,
     getTourInfo,
     insertTourInfo,
-    insertTourPlan
+    insertTourPlan,
+    getTourInfoList
 }
