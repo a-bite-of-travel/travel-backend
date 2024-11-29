@@ -17,7 +17,7 @@ app.use(
    })
  );
 
-app.use("/downloads", express.static(path.join(__dirname, "public/uploads")));
+app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 
 const postRoutes = require('./src/routes/reviewRoutes');
 

@@ -7,22 +7,31 @@ const jwt = require("jsonwebtoken");
 
 //회원가입
 const register = async (req, res) => {
-    console.log('Request Body:', req.body);
-    console.log('File:', req.file);
     console.log('register');
     
-    const { email, password,confirmPassword, nickName } = req.body;
-    const profile_img = req.file; 
+    const { email, password, confirmPassword, nickName } = req.body;
+    console.log("요청 바디:", req.body);
+
+
+    const profileImage = req.file;
+    console.log('File:', req.file);
+    console.log("업로드된 파일 정보:", profileImage);
+
+    
+    //const profileImagePath = `/uploads/${profileImage.filename}`;
+    //console.log(profileImagePath);
+     
+
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
         }
-        
+
         if (password !== confirmPassword) {
             return res.status(400).json({ errors: [{ param: "confirmPassword", msg: "비밀번호가 서로 일치하지 않습니다." }] });
         }
-        
+
         // 탈퇴한 회원
         const deletedUser = await userService.findUserByEmail(email);
         if (deletedUser && deletedUser.isDisabled) {
@@ -34,26 +43,34 @@ const register = async (req, res) => {
         if (existingUser) {
             return res.status(400).json({ errors: [{ param: "email", msg: "이미 사용 중인 이메일입니다." }] });
         }
-        
+
         const hashedPassword = await bcrypt.hash(password, 10);
 
+
         const user = await userService.createUser({
-            email: email,
+            email,
             password: hashedPassword,
             confirmPassword : hashedPassword,
-            nickName: nickName,
-            profile_img: profile_img ? profile_img.path : null 
+            nickName,
+            profileImage: profileImage ? `/uploads/${profileImage.filename}` : null, // 파일 경로 저장
         });
-        res.status(201).json({ data: user, message: '회원가입 성공' });
+        
+        res.status(201).json({
+            id: user._id,
+            email: user.email,
+            nickName: user.nickName,
+            profileImage: profileImage ? `/uploads/${profileImage.filename}` : null, //  URL 반환
+            message: "회원가입 성공",
+        });
     } catch (err) {
-        console.log(err);
+        console.error("회원가입 실패:", err.message); // 디버깅용
         res.status(500).json({ errors: [{ param: "general", msg: err.message }] });
     }
 }
 
 //로그인
 const login = async (req, res) => {
-    const { nickName,email, password } = req.body;
+    const { email, password } = req.body;
     try {
         const user = await userService.findUserByEmail(email);
         if (user && user.isDisabled) {
@@ -71,13 +88,21 @@ const login = async (req, res) => {
 
         const accessToken = generateAccessToken(user);
         const refreshToken = generateRefreshToken(user);
-
+        console.log('login', 'user', user)
         res.status(200).json({
-            id: user._id,
-            email: user.email,
+            user: {
+                id: user._id,
+                email: user.email,
+                nickName: user.nickName,
+                profileImage: user.profileImage,
+            },
+            // id: user._id,
+            // email: user.email,
+            // nickName: user.nickName,
+            // profileImage: user.profileImage,
             accessToken,
             refreshToken,
-            nickName: user.nickName,
+            message: '로그인 성공',
         })
     } catch (e) {
         res.status(500).json({ errors: [{ param: "general", msg: e.message }] });
@@ -86,15 +111,25 @@ const login = async (req, res) => {
 
 //토큰갱신
 const refresh = async (req, res) => {
-    const { token } = req.body; //refresh token
-    if (!token) return res.sendStatus(401);
+    const { token } = req.body;
 
-    jwt.verify(token, 'refresh', (err, user) => {
-        if (err) return res.sendStatus(403);
-        const accessToken = generateAccessToken(user);
-        res.status(200).json({ accessToken })
-    })
-}
+    if (!token) {
+        return res.status(401).json({ errors: [{ param: "token", msg: "토큰이 필요합니다." }] });
+    }
+
+    try {
+        const user = jwt.verify(token, 'refresh');
+        const newAccessToken = generateAccessToken(user);
+        res.status(200).json({ accessToken: newAccessToken });
+    } catch (err) {
+        if (err.name === "TokenExpiredError") {
+            return res.status(401).json({ errors: [{ param: "token", msg: "토큰이 만료되었습니다." }] });
+        }
+        console.error("토큰 갱신 실패:", err.message);
+        res.status(403).json({ errors: [{ param: "token", msg: "유효하지 않은 토큰입니다." }] });
+    }
+};
+
 
 //로그아웃
 const logout = async (req, res) => {
@@ -154,14 +189,15 @@ const deleteUser = async (req, res) => {
 };
 
 const validate = async (req, res) => {
-  const { token } = req.body; // refresh token
-  if (!token) return res.sendStatus(401);
-  try {
-    const user = jwt.verify(token, "access");
-    res.json({ valid: true, user });
-  } catch (e) {
-    res.json({ valid: false });
-  }
+    const { token } = req.body; // refresh token
+    if (!token) return res.sendStatus(401);
+    try {
+        const user = jwt.verify(token, "access");
+        // console.log('validate', user);
+        res.json({ valid: true, user });
+    } catch (e) {
+        res.json({ valid: false });
+    }
 };
 
 module.exports = {
