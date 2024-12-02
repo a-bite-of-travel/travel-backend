@@ -11,6 +11,10 @@ const reviewSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Comment',
     }],
+    nickName:[{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    }],
     userId: mongoose.Types.ObjectId,
     itineraryId: mongoose.Types.ObjectId,
     createdAt: { type: Date, default: Date.now },
