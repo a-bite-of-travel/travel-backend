@@ -18,3 +18,27 @@ GET localhost:3500/tour/info?contenttypeid=관광지&page=1&searchText=치킨
 
 ###
 GET http://localhost:3500/tour/info?contenttypeid=관광지&page=1
+
+###
+POST localhost:3500/users/register
+Content-Type: application/json
+
+{
+    "email": "bvbv@test.com",
+    "password": "admin1234!",
+    "confirmPassword": "admin1234!",
+    "profileImage": "",
+    "nickName" :"aaa"
+}
+
+###
+GET localhost:3500/users
+
+###
+POST localhost:3500/auth/login
+Content-Type: application/json
+
+{
+  "email": "bvbv@test.com",
+  "password": "admin1234!"
+}

@@ -75,9 +75,9 @@ const getTourPlanData = async (sigunguCode, startDate, period, theme) => {
     let selectTourInfoList = await tourModel.selectTourInfoList(cond, 0, 0);
 
     if (selectTourInfoList.length > 0) {
-        // let generatePlanData = await gptAI(sigunguCode.name, period, themeName, selectTourInfoList, 'plan');
-        // generatePlanData = JSON.parse(generatePlanData.content.replace(/^json\n|\n$/g, ''));
-        let generatePlanData = ['2456536', '2759626', '2660731', '3076114', '2733970'];
+        let generatePlanData = await gptAI(sigunguCode.name, period, themeName, selectTourInfoList, 'plan');
+        generatePlanData = JSON.parse(generatePlanData.content.replace(/^json\n|\n$/g, ''));
+        // let generatePlanData = ['2456536', '2759626', '2660731', '3076114', '2733970'];
 
         // 비동기 작업 생성
         const planDataPromises = selectTourInfoList
@@ -99,7 +99,7 @@ const getTourPlanData = async (sigunguCode, startDate, period, theme) => {
         const planData = await Promise.all(planDataPromises);
 
         let result = await gptAI(sigunguCode.name, period, themeName, planData, 'detail');
-        return result.content.replace(/^```json\n/, '').replace(/\n```$/, '');
+        return JSON.parse(result.content.replace(/^```json\n/, '').replace(/\n```$/, ''));
 
     } else {
         return null;

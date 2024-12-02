@@ -9,6 +9,10 @@ const createUser = async (userData) => {
     return await user.save();
 };
 
+const findOneUser = async (cond) => {
+    return await userModel.findOne(cond);
+}
+
 const findUserByEmail = async (email) => {
     return await userModel.findOne({ email });
 };
@@ -24,6 +28,7 @@ const findByIdAndUpdate = async (userId) => {
 module.exports = {
     findAll,
     createUser,
+    findOneUser,
     findUserByEmail,
     findByIdAndUpdate,
 };
