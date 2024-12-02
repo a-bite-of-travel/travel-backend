@@ -99,7 +99,7 @@ const getTourPlanData = async (sigunguCode, startDate, period, theme) => {
         const planData = await Promise.all(planDataPromises);
 
         let result = await gptAI(sigunguCode.name, period, themeName, planData, 'detail');
-        return result.content.replace(/^```json\n/, '').replace(/\n```$/, '');
+        return JSON.parse(result.content.replace(/^```json\n/, '').replace(/\n```$/, ''));
 
     } else {
         return null;
