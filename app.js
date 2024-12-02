@@ -9,7 +9,6 @@ const authRoute = require('./src/routes/authRoute');
 const postRoutes = require('./src/routes/reviewRoutes');
 
 const path = require('path');
-const cors = require("cors");
 const app = express();
 
 
@@ -23,7 +22,7 @@ app.use(
 
 app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 
-app.use(cors());
+//app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use("/users",userRoute);
