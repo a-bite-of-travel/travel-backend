@@ -28,9 +28,18 @@ const insertTourPlan = async (req, res) => {
     res.status(201).json({message: 'ok', data: null});
 }
 
+
+const getTourInfoList = async (req, res) => {
+    const { contentType, page, region, cat, catValue,searchText } = req.query;
+    const data = await tourService.getTourInfoList(contentType, page, region, cat, catValue,searchText);
+
+    res.status(200).json({message: 'ok', data});
+}
+
 module.exports = {
     getTourCodes,
     getTourInfo,
     insertTourInfo,
-    insertTourPlan
+    insertTourPlan,
+    getTourInfoList
 }

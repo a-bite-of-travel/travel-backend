@@ -3,9 +3,10 @@ const tourController = require('../controllers/tourController');
 
 const route = express.Router();
 
-route.get('/info', tourController.getTourInfo);
-route.get('/code', tourController.getTourCodes);
-route.post('/info', tourController.insertTourInfo);
-route.post('/plan', tourController.insertTourPlan);
+route.post('/', tourController.insertTourInfo); // 여행정보 데이터베이스에 저장
+route.get('/', tourController.getTourInfo); // 여행 일정 정보 불러오기
+route.get('/code', tourController.getTourCodes); // 여행 일정 생성에 필요한 코드 가져오기
+route.post('/plan', tourController.insertTourPlan); // 여행일정 저장
+route.get('/info', tourController.getTourInfoList); // 여행정보 목록 가져오기
 
 module.exports = route;

@@ -2,6 +2,7 @@
   "name": "travel-backend",
   "version": "1.0.0",
   "main": "app.js",
+  "proxy": "http://localhost:3500",
   "scripts": {
     "dev": "nodemon app.js",
     "start": "node app.js",
