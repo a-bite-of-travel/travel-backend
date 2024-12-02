@@ -7,12 +7,21 @@ const tourRoute = require('./src/routes/tourRoute');
 const userRoute = require('./src/routes/userRoute');
 const authRoute = require('./src/routes/authRoute');
 const postRoutes = require('./src/routes/reviewRoutes');
+
 const path = require('path');
+const cors = require("cors");
 const app = express();
 
-app.use(cors());
 
-app.use("/downloads", express.static(path.join(__dirname, "public/uploads")));
+app.use(
+   cors({
+     origin: "http://localhost:3000", // React 앱 주소
+     methods: ["GET", "POST", "PUT", "DELETE"], // 허용할 HTTP 메서드
+     credentials: true, // 쿠키, 인증 정보를 포함하려면 설정
+   })
+ );
+
+app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
