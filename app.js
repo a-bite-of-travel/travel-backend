@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const errorHandler = require('./src/middlewares/errorHandler');
 require('dotenv').config();
 
 const mongoose = require('./configs/mongoose-config');
@@ -7,10 +8,10 @@ const tourRoute = require('./src/routes/tourRoute');
 const userRoute = require('./src/routes/userRoute');
 const authRoute = require('./src/routes/authRoute');
 const postRoutes = require('./src/routes/reviewRoutes');
+const uploadRoute = require('./src/routes/uploadRoute');
 
 const path = require('path');
 const app = express();
-
 
 app.use(
    cors({
@@ -22,17 +23,17 @@ app.use(
 
 app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 
-//app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
-app.use("/users",userRoute);
-app.use("/auth",authRoute);
+app.use('/users',userRoute);
+app.use('/auth',authRoute);
 app.use('/review', postRoutes);
 app.use('/tour', tourRoute);
+app.use('/upload', uploadRoute);
+
+app.use(errorHandler);
 
 mongoose();
-
-
 
 app.listen(process.env.SERVER_PORT, () => {
    console.log(`server start`);

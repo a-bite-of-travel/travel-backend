@@ -1,26 +1,29 @@
 const userService = require("../services/userService");
 
-const findAll = async (req, res) => {
-    try {
-        const users = await userService.findAll();
-        res.status(200).json({ data: users, message: 'ok' });
-    } catch (e) {
-        res.status(500).json({ message: e });
-    }
-}
+//회원가입
+const register = async (req, res, next) => {
+    console.log('register');
 
-const createUser = async (req, res) => {
     try {
-        const { email, password, confirmPassword, nickName, profileImage } = req.body;
-        const result = await userService.createUser({ email, password, confirmPassword, nickName, profileImage });
-
-        res.status(201).json(result);
+        const user = await userService.register(req.body);
+        res.status(201).json({ message: '회원가입 성공', data: user});
     } catch (err) {
-        res.status(400).json({ error: err.message });
+        next(err);
     }
 }
+
+//회원탈퇴
+const deactivateUser = async (req, res, next) => {
+    try {
+        const token = req.accessToken;
+        const result = await userService.deactivateUser(token);
+        res.status(200).json({ message: "회원탈퇴가 완료되었습니다.", data: result });
+    } catch (err) {
+       next(err);
+    }
+};
 
 module.exports = {
-    findAll,
-    createUser,
+    register,
+    deactivateUser
 }; 
