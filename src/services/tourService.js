@@ -1,106 +1,169 @@
 const { tourApi, gptAI } = require('../utils/api');
-const { tourCodeFilter, setTourInfoCond, tourApiGetDetailInfo } = require('../utils/tourSubFunc');
 const tourModel = require('../models/tourModel');
-const waait = require('waait');
 
-// TourAPI를 이용해 여행정보 저장
-const insertTourInfo = async () => {
-    for(let i=1; i<26; i++) {
-        let areaBasedList = await tourApi('areaBasedList1', `&areaCode=1&sigunguCode=${i}&listYN=Y`);
+const returnTourInfoMap = (data, type) => {
+    return data.map(item => {
+        let cat = '';
 
-        areaBasedList = areaBasedList.filter(item => (item.cat2 !== 'A0206') &&
-            (item.cat2 !== 'A0207') &&
-            (item.cat2 !== 'A0208') &&
-            (item.cat1 !== 'B02') )
-            .map(item => ({
-            addr1: item.addr1, // 주소
-            addr2: item.addr2, // 상세주소
-            cat1: item.cat1, // 대분류
-            cat2: item.cat2, // 중분류
-            cat3: item.cat3, // 소분류
-            contentid: item.contentid, // 콘텐츠ID
-            contenttypeid: item.contenttypeid, // 콘텐츠 type
-            firstimage: item.firstimage, // 원본 이미지
-            firstimage2: item.firstimage2, // 썸네일용 이미지
-            mapx: item.mapx, // x좌표
-            mapy: item.mapy, // y좌표
-            tel: item.tel,  // 전화번호
-            title: item.title, // 지명
-            sigungucode: item.sigungucode // 시군구 코드
-        }));
+        if(type === 'food')
+            cat = item.cat3;
+        else
+            cat = item.cat2;
 
-        await tourModel.insertTourInfo(areaBasedList);
-
-        await waait(1000);
-    }
+        return {
+            addr: item.addr1 + item.addr2,
+            cat,
+            contentid: item.contentid,
+            contenttypeid: item.contenttypeid,
+            firstimage: item.firstimage,
+            firstimage2: item.firstimage2,
+            mapx: item.mapx,
+            mapy: item.mapy,
+            tel: item.tel,
+            title: item.title,
+            sigungucode: item.sigungucode,
+            detailinfo: null
+        }
+    });
 }
 
-// 여행 일정 생성을 위해 필요한 코드 값들
-// 지역, 테마, 여행일정
+// TourAPI를 이용해 여행정보 저장
+const saveTourInfo = async  () => {
+    // 관광지 정보 저장
+    let tourInfoList = await tourApi('areaBasedList1',`&areaCode=1&contentTypeId=12&listYN=Y`);
+    const  saveTourInfoList = returnTourInfoMap(tourInfoList, 'tour');
+    await tourModel.saveTourInfo(saveTourInfoList);
+
+    // 축제 정보 저장
+    let festaInfoList = await tourApi('areaBasedList1',`&areaCode=1&contentTypeId=15&listYN=Y&cat1=A02&cat2=A0207`);
+    const  saveFestaInfoList = returnTourInfoMap(festaInfoList, 'festa');
+    await tourModel.saveTourInfo(saveFestaInfoList);
+
+    // 음식점 정보 저장
+    let foodInfoList = await tourApi('areaBasedList1',`&areaCode=1&contentTypeId=39&listYN=Y`);
+    const  saveFoodInfoList = returnTourInfoMap(foodInfoList, 'food');
+    await tourModel.saveTourInfo(saveFoodInfoList);
+}
+
+// 여행 일정 생성시 필요한 코드 값들 : 지역, 일정, 테마
 const getTourCodes = async () => {
     let tourCodes = await tourModel.selectTourCodeList({});
 
-    const sigunguCode = tourCodeFilter("sigungu", tourCodes);
-    const periodCode = tourCodeFilter("period", tourCodes);
-    const themeCode = tourCodeFilter("theme", tourCodes);
-
-    return { sigunguCode, periodCode, themeCode }
+    return tourCodes.reduce((acc, item) => {
+        if (!acc[item.type]) {
+            acc[item.type] = [];
+        }
+        acc[item.type].push(item);
+        return acc;
+    }, {});
 }
 
-// 여행지역, 출발일자, 기간(하루, 1박2일, 2박3일), 테마를 입력받아 여행지 목록 생성
-// - theme: [{ code: 22, name: "dd" }, { code: 22, name: "dd" }]
-// - sigunguCode :  { code: 1, name: "dd" } json
-const getTourInfo = async (sigunguCode, startDate, period, theme) => {
-    // themeCode 조건 값 가져오기.
+const getTourPlanData = async (sigunguCode, startDate, period, theme) => {
     let themeCode = [];
     let themeName = [];
 
-    for(const item of theme) {
+    for (const item of theme) {
         themeCode.push(item.code);
         themeName.push(item.name);
     }
 
-    let themeCodeCond = await tourModel.selectTourCodeList({code: { $in: themeCode }});
+    let cond = {
+        sigungucode: sigunguCode.code,
+        cat: { $in: themeCode }
+    };
 
-    const cond = setTourInfoCond(themeCodeCond, sigunguCode.code); // tourInfoList 찾을 condition 생성 후 반환
-    let tourInfoList = await tourModel.selectTourInfoList(cond);
+    let selectTourInfoList = await tourModel.selectTourInfoList(cond, 0, 0);
 
-    // gpt로 여헹일정 생성을 위한 contentid 받아오기.
-    // 여행 정보 전달 시에 gpt가 답변하기 위해 필요한 핵심 정보만을 추려서 전송하기
-    let getContents = await gptAI(sigunguCode.name, period, themeName, tourInfoList);
-    getContents = JSON.parse(getContents.content.replace(/^```json\n|\n```$/g, ''));
+    if (selectTourInfoList.length > 0) {
+        let generatePlanData = await gptAI(sigunguCode.name, period, themeName, selectTourInfoList, 'plan');
+        generatePlanData = JSON.parse(generatePlanData.content.replace(/^json\n|\n$/g, ''));
+        // let generatePlanData = ['2456536', '2759626', '2660731', '3076114', '2733970'];
 
-    let tourDetailInfoList = await tourModel.selectTourDetailInfoList(
-        {contentid: { $in: tempContent.map(item => item.contentid) }});
-    let detailContentIds = tourDetailInfoList.map(item => item.contentid);
+        // 비동기 작업 생성
+        const planDataPromises = selectTourInfoList
+            .filter(item => generatePlanData.includes(item.contentid))
+            .map(async data => {
+                if (!data.detail) {
+                    const detailIntro = await tourApi(
+                        'detailIntro1',
+                        `&contentId=${data.contentid}&contentTypeId=${data.contenttypeid}`
+                    );
 
-    getContents = getContents.filter(item => !(detailContentIds.includes(item.contentid)));
+                    const result = detailIntro.map(({ contentid, contenttypeid, ...rest }) => rest);
 
-    // 데이터베이스에 저장된 세부 정보가 없을 경우에 api로 데이터 검색 후 insert
-    if(getContents.length !== 0) {
-        for(let info of getContents) {
-            const data = await tourApiGetDetailInfo(info.contenttypeid, info.contentid);
+                    return await tourModel.updateTourInfo({ detailinfo: result }, data.contentid);
+                }
+            });
 
-            await tourModel.insertTourDetailInfo(data[0]);
-            tourDetailInfoList.push(data);
-        }
+        // 모든 비동기 작업을 기다림
+        const planData = await Promise.all(planDataPromises);
+
+        let result = await gptAI(sigunguCode.name, period, themeName, planData, 'detail');
+        return JSON.parse(result.content.replace(/^```json\n/, '').replace(/\n```$/, ''));
+
+    } else {
+        return null;
     }
-
-    tourInfoList = tourInfoList.filter(item =>
-        getContents.some(temp => temp.contentid === item.contentid)
-    );
-
-    return { tourInfoList, tourDetailInfoList };
-
-}
+};
 
 const insertTourPlan = async (data) => {
     return await tourModel.insertTourPlan(data);
 }
 
+// 여행지 정보 출력
+const getTourInfoList = async (contenttypeid, page, region, cat, catValue,searchText) => {
+    const cond = {
+        contenttypeid
+    }
+
+    const regex = (pattern) => new RegExp(`.*${pattern}.*`);
+
+    if(searchText)
+        cond.title = { $regex: regex(searchText)};
+
+    if(region)
+        cond.sigungucode = { $in: region.split(',')};
+
+    if(cat)
+        cond[cat] = { "$in": catValue.split(',')};
+
+    const skip = 5 * (page - 1);
+
+    const totalCount = await tourModel.getTourInfoTotalCount(cond);
+    const tourInfoList = await tourModel.selectTourInfoList(cond, skip);
+
+    return {items: tourInfoList, totalCount}
+}
+
+// 여행지 상세 정보 출력
+const getTourInfoDetail = async (contentid, contenttypeid) => {
+    let tourInfoDetail = await tourModel.findOneTourInfo({contentid: contentid});
+    if(!tourInfoDetail.overview || !tourInfoDetail.homepage) {
+        const commonData =  await tourApi(
+            'detailCommon1', `&contentId=${contentid}&overviewYN=Y&defaultYN=Y`
+        );
+
+        tourInfoDetail = await tourModel.updateTourInfo({ overview: commonData[0].overview, homepage: commonData[0].homepage }, contentid);
+    }
+
+    if(!tourInfoDetail.detailinfo) {
+        let detailIntro = await tourApi(
+            'detailIntro1',
+            `&contentId=${contentid}&contentTypeId=${contenttypeid}`
+        );
+        detailIntro = detailIntro.map(({ contentid, contenttypeid, ...rest }) => rest);
+
+        tourInfoDetail = await tourModel.updateTourInfo({ detailinfo: detailIntro }, contentid);
+    }
+
+    return tourInfoDetail;
+}
+
 module.exports = {
+    saveTourInfo,
     getTourCodes,
-    getTourInfo,
-    insertTourInfo,
-    insertTourPlan
+    insertTourPlan,
+    getTourInfoList,
+    getTourPlanData,
+    getTourInfoDetail
 }

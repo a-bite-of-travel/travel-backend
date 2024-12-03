@@ -1,14 +1,34 @@
 const reviewService = require('../services/reviewServices');
 
-//리뷰 작성
-const createReview = async(req, res) =>{
-    try{
-        const post = await reviewService.createReview(req.body);
-        res.status(200).json({message:'ok', data: post});
-    }catch(e){
-        res.status(500).json({message: 'error', data:e.message});
+// 리뷰 작성
+const createReview = async (req, res) => {
+    try {
+        // 요청 본문에서 필요한 데이터 추출
+        const { title, content, imageUrl, tags, reviewType } = req.body;
+
+        // 로그인된 사용자 정보를 가져옵니다.
+        const userId = req.user._id; // 사용자 ID
+        const userName = req.user.nickName; // 사용자 닉네임
+
+        // 새로운 리뷰 객체 생성
+        const newReview = {
+            title,
+            content,
+            imageUrl,
+            tags,
+            reviewType,
+            userName: userName,  // 리뷰 작성자 이름 (닉네임)
+            userId: userId,      // 리뷰 작성자 ID
+        };
+
+        // reviewService를 통해 리뷰 저장
+        const savedReview = await reviewService.createReview(newReview);
+
+        res.status(201).json({ message: '리뷰가 성공적으로 생성되었습니다.', review: savedReview });
+    } catch (error) {
+        res.status(500).json({ message: '리뷰 생성 중 오류가 발생했습니다.', error });
     }
-}
+};
 
 //리뷰 목록조회
 const findAll = async (req, res) => {
@@ -62,12 +82,18 @@ const deletePost = async (req, res) => {
 //댓글 달기
 const createComment = async(req, res) =>{
     try{
+        console.log('Request User:', req.user);
         const id = req.params.id;
         const { content } = req.body;
+        const userName = req.user.nickName;
         if (!content) {
             return res.status(400).json({ message: '댓글 내용이 필요합니다.' });
         }
-        const post = await reviewService.createComment(id, req.body);
+        const newComment = {
+            content,
+            userName: userName
+        };
+        const post = await reviewService.createComment(id, newComment);
         res.status(200).json({message:'ok', data: post});
     }catch(e){
         res.status(500).json({message: 'error', data:e.message});

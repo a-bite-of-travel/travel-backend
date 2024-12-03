@@ -4,9 +4,8 @@ const { Schema } = require('mongoose');
 const userSchema = new Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    confirmPassword: { type: String, required: true },
-    profile_img: Buffer,
-    nickName: String,
+    profileImage: { type: String, required: false },
+    nickName: { type: String, required: true },
     joinedDate: { type: Date, default: Date.now },
     isDisabled: { type: Boolean, default: false },
     deletedAt: { type: Date, default: null }

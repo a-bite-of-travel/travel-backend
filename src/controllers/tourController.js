@@ -7,16 +7,17 @@ const getTourCodes = async (req, res) => {
 }
 
 // 여행 정보 생성하기
-const getTourInfo = async (req, res) => {
+const getTourPlanData = async (req, res) => {
     const {sigunguCode, startDate, period, theme} = req.body
-    const data = await tourService.getTourInfo(sigunguCode, startDate, period, theme);
+
+    const data = await tourService.getTourPlanData(sigunguCode, startDate, period, theme);
 
     res.status(201).json({message: 'ok', data });
 }
 
 // 여행정보 저장
-const insertTourInfo = async (req, res) => {
-    await tourService.insertTourInfo();
+const saveTourInfo = async (req, res) => {
+    await tourService.saveTourInfo();
 
     res.status(201).json({message: 'ok', data: null});
 }
@@ -28,9 +29,28 @@ const insertTourPlan = async (req, res) => {
     res.status(201).json({message: 'ok', data: null});
 }
 
+
+const getTourInfoList = async (req, res) => {
+    const { contenttypeid, page, region, cat, catValue,searchText } = req.query;
+    const data = await tourService.getTourInfoList(contenttypeid, page, region, cat, catValue,searchText);
+
+    res.status(200).json({message: 'ok', data});
+}
+
+const getTourInfoDetail = async (req, res) => {
+    const { contentid } = req.params;
+    const { contenttypeid } = req.query;
+
+    const data = await tourService.getTourInfoDetail(contentid, contenttypeid);
+
+    res.status(200).json({message: '상세페이지 조회 성공', data});
+}
+
 module.exports = {
     getTourCodes,
-    getTourInfo,
-    insertTourInfo,
-    insertTourPlan
+    getTourPlanData,
+    saveTourInfo,
+    insertTourPlan,
+    getTourInfoList,
+    getTourInfoDetail
 }

@@ -1,8 +1,12 @@
 const express = require('express');
-const { findAll } = require("../controllers/userController");
+const { register, deactivateUser } = require('../controllers/userController');
+const { validationErrorHandler } = require('../middlewares/validationErrorHandler');
+const { registerValidator } = require('../utils/registerValidator');
+const { authenticate } = require('../middlewares/authenticate');
 
 const router = express.Router();
 
-router.get('/', findAll)
+router.post('/register', registerValidator, validationErrorHandler, register);
+router.delete('/', authenticate, deactivateUser);
 
 module.exports = router;
