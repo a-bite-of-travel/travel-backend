@@ -53,12 +53,14 @@ jobs:
         with:
           name: app-build
 
-      - uses: azure/login@v2
+      - name: Login to Azure
+        uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID }}
-          auth-type: 'oidc'
+          client-secret: ${{ secrets.AZUREAPPSERVICE_SECRET }}
+          auth-type: 'SERVICE_PRINCIPAL'
 
       - uses: azure/webapps-deploy@v3
         with:
