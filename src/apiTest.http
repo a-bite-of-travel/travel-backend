@@ -24,7 +24,7 @@ POST localhost:3500/users/register
 Content-Type: application/json
 
 {
-    "email": "bvbv@test.com",
+    "email": "tttt@test.com",
     "password": "admin1234!",
     "confirmPassword": "admin1234!",
     "profileImage": "",
@@ -39,6 +39,6 @@ POST localhost:3500/auth/login
 Content-Type: application/json
 
 {
-  "email": "bvbv@test.com",
+  "email": "tttt@test.com",
   "password": "admin1234!"
 }

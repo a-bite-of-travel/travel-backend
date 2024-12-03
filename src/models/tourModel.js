@@ -13,20 +13,25 @@ const saveTourInfo = async (data) => {
 }
 
 // 여행 상세 정보 저장
-const updateTourInfo = async (data, contentId) => {
+const updateTourInfo = async (cond, contentId) => {
     return await tourInfoModel.findOneAndUpdate(
         { contentid: contentId },
-        { detailinfo: data },
+        cond,
         { new: true }
     );
 }
 
-// 여행정보 출력
+// 여행지 정보 출력
 const selectTourInfoList = async (cond, skip) => {
     return await tourInfoModel.find(cond)
         .sort({title: 1})
         .skip(skip)
-        .limit(20);
+        .limit(5);
+}
+
+// 여행지 상세 정보 출력
+const findOneTourInfo = async (cond) => {
+    return await tourInfoModel.findOne(cond);
 }
 
 const getTourInfoTotalCount = async (cond) => {
@@ -48,6 +53,7 @@ module.exports = {
     saveTourInfo,
     updateTourInfo,
     selectTourInfoList,
+    findOneTourInfo,
     getTourInfoTotalCount,
     insertTourPlan,
     getTourPlanTotalCount

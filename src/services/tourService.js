@@ -91,7 +91,7 @@ const getTourPlanData = async (sigunguCode, startDate, period, theme) => {
 
                     const result = detailIntro.map(({ contentid, contenttypeid, ...rest }) => rest);
 
-                    return await tourModel.updateTourInfo(result, data.contentid);
+                    return await tourModel.updateTourInfo({ detailinfo: result }, data.contentid);
                 }
             });
 
@@ -110,14 +110,11 @@ const insertTourPlan = async (data) => {
     return await tourModel.insertTourPlan(data);
 }
 
-// 여행정보 출력
-const getTourInfoList = async (contentType, page, region, cat, catValue,searchText) => {
-    const cond = {}
-
-    if(contentType === "관광지")
-        cond.contenttypeid = { $ne: 39 };
-    else
-        cond.contenttypeid = 39;
+// 여행지 정보 출력
+const getTourInfoList = async (contenttypeid, page, region, cat, catValue,searchText) => {
+    const cond = {
+        contenttypeid
+    }
 
     const regex = (pattern) => new RegExp(`.*${pattern}.*`);
 
@@ -130,7 +127,7 @@ const getTourInfoList = async (contentType, page, region, cat, catValue,searchTe
     if(cat)
         cond[cat] = { "$in": catValue.split(',')};
 
-    const skip = 20 * (page - 1);
+    const skip = 5 * (page - 1);
 
     const totalCount = await tourModel.getTourInfoTotalCount(cond);
     const tourInfoList = await tourModel.selectTourInfoList(cond, skip);
@@ -138,10 +135,35 @@ const getTourInfoList = async (contentType, page, region, cat, catValue,searchTe
     return {items: tourInfoList, totalCount}
 }
 
+// 여행지 상세 정보 출력
+const getTourInfoDetail = async (contentid, contenttypeid) => {
+    let tourInfoDetail = await tourModel.findOneTourInfo({contentid: contentid});
+    if(!tourInfoDetail.overview || !tourInfoDetail.homepage) {
+        const commonData =  await tourApi(
+            'detailCommon1', `&contentId=${contentid}&overviewYN=Y&defaultYN=Y`
+        );
+
+        tourInfoDetail = await tourModel.updateTourInfo({ overview: commonData[0].overview, homepage: commonData[0].homepage }, contentid);
+    }
+
+    if(!tourInfoDetail.detailinfo) {
+        let detailIntro = await tourApi(
+            'detailIntro1',
+            `&contentId=${contentid}&contentTypeId=${contenttypeid}`
+        );
+        detailIntro = detailIntro.map(({ contentid, contenttypeid, ...rest }) => rest);
+
+        tourInfoDetail = await tourModel.updateTourInfo({ detailinfo: detailIntro }, contentid);
+    }
+
+    return tourInfoDetail;
+}
+
 module.exports = {
     saveTourInfo,
     getTourCodes,
     insertTourPlan,
     getTourInfoList,
-    getTourPlanData
+    getTourPlanData,
+    getTourInfoDetail
 }
