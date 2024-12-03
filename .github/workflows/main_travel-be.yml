@@ -13,33 +13,46 @@ jobs:
     env:
       SERVER_PORT: ${{ secrets.SERVER_PORT }}
       DB_URI: ${{ secrets.DB_URI }}
-      TOURAPI_KEYI: ${{ secrets.TOURAPI_KEY }}
+      TOURAPI_KEY: ${{ secrets.TOURAPI_KEY }}
       GPT_URI: ${{ secrets.GPT_URI }}
       AZURE_AI_KEY: ${{ secrets.AZURE_AI_KEY }}
       ACCESS_SECRET_KEY: ${{ secrets.ACCESS_SECRET_KEY }}
       REFRESH_SECRET_KEY: ${{ secrets.REFRESH_SECRET_KEY }}
 
     steps:
-      - uses: actions/checkout@v4
+      # 1. Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v3
+      # 2. Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
         with:
           node-version: '20.x'
 
-      - run: |
-          npm install
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # 4. Build the project (if needed, otherwise can be skipped)
+      - name: Build project
+        run: |
           npm run build --if-present
 
-      - run: |
-          echo "SERVER_PORT: ${{ secrets.SERVER_PORT }}" >> .env
-          echo "DB_URI: ${{ secrets.DB_URI }}" >> .env
-          echo "TOURAPI_KEYI: ${{ secrets.TOURAPI_KEY }}" >> .env
-          echo "GPT_URI: ${{ secrets.GPT_URI }}" >> .env
-          echo "AZURE_AI_KEY: ${{ secrets.AZURE_AI_KEY }}" >> .env
-          echo "ACCESS_SECRET_KEY: ${{ secrets.ACCESS_SECRET_KEY }}" >> .env
-          echo "REFRESH_SECRET_KEY: ${{ secrets.REFRESH_SECRET_KEY }}" >> .env
+      # 5. Generate .env file for environment variables
+      - name: Create .env file
+        run: |
+          echo "SERVER_PORT=${{ secrets.SERVER_PORT }}" >> .env
+          echo "DB_URI=${{ secrets.DB_URI }}" >> .env
+          echo "TOURAPI_KEY=${{ secrets.TOURAPI_KEY }}" >> .env
+          echo "GPT_URI=${{ secrets.GPT_URI }}" >> .env
+          echo "AZURE_AI_KEY=${{ secrets.AZURE_AI_KEY }}" >> .env
+          echo "ACCESS_SECRET_KEY=${{ secrets.ACCESS_SECRET_KEY }}" >> .env
+          echo "REFRESH_SECRET_KEY=${{ secrets.REFRESH_SECRET_KEY }}" >> .env
 
-      - uses: actions/upload-artifact@v4
+      # 6. Upload artifact (optional for manual deployment or debug purposes)
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
           name: app-build
           path: .
@@ -53,7 +66,9 @@ jobs:
       contents: read
 
     steps:
-      - uses: azure/login@v2
+      # 1. Login to Azure
+      - name: Azure login
+        uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID }}
@@ -62,7 +77,9 @@ jobs:
           ACTIONS_STEP_DEBUG: true
           ACTIONS_RUNNER_DEBUG: true
 
-      - uses: azure/webapps-deploy@v3
+      # 2. Deploy to Azure Web App
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
         with:
           app-name: 'travel-be'
           package: .
