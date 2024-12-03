@@ -1,7 +1,4 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy Node.js app to Azure Web App - travel-be
+name: Build and deploy Node.js app to Azure Web App
 
 on:
   push:
@@ -13,59 +10,57 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      SERVER_PORT: ${{ secrets.SERVER_PORT }}
+      DB_URI: ${{ secrets.DB_URI }}
+      TOURAPI_KEYI: ${{ secrets.TOURAPI_KEY }}
+      GPT_URI: ${{ secrets.GPT_URI }}
+      AZURE_AI_KEY: ${{ secrets.AZURE_AI_KEY }}
+      ACCESS_SECRET_KEY: ${{ secrets.ACCESS_SECRET_KEY }}
+      REFRESH_SECRET_KEY: ${{ secrets.REFRESH_SECRET_KEY }}
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js version
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: '20.x'
 
-      - name: npm install, build, and test
-        run: |
+      - run: |
           npm install
           npm run build --if-present
-          
-      - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
 
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v4
+      - run: |
+          echo "SERVER_PORT: ${{ secrets.SERVER_PORT }}" >> .env
+          echo "DB_URI: ${{ secrets.DB_URI }}" >> .env
+          echo "TOURAPI_KEYI: ${{ secrets.TOURAPI_KEY }}" >> .env
+          echo "GPT_URI: ${{ secrets.GPT_URI }}" >> .env
+          echo "AZURE_AI_KEY: ${{ secrets.AZURE_AI_KEY }}" >> .env
+          echo "ACCESS_SECRET_KEY: ${{ secrets.ACCESS_SECRET_KEY }}" >> .env
+          echo "REFRESH_SECRET_KEY: ${{ secrets.REFRESH_SECRET_KEY }}" >> .env
+
+      - uses: actions/upload-artifact@v4
         with:
-          name: node-app
-          path: release.zip
+          name: app-build
+          path: .
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
-    environment:
-      name: 'Production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-    permissions:
-      id-token: write #This is required for requesting the JWT
 
     steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
-          name: node-app
+          name: app-build
 
-      - name: Unzip artifact for deployment
-        run: unzip release.zip
-      
-      - name: Login to Azure
-        uses: azure/login@v2
+      - uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID }}
-          client-secret: ${{ secrets.AZUREAPPSERVICE_SECRET }}
+          auth-type: 'oidc'
 
-      - name: 'Deploy to Azure Web App'
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v3
+      - uses: azure/webapps-deploy@v3
         with:
           app-name: 'travel-be'
-          slot-name: 'Production'
           package: .
-          
