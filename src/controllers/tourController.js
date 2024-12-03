@@ -31,10 +31,19 @@ const insertTourPlan = async (req, res) => {
 
 
 const getTourInfoList = async (req, res) => {
-    const { contentType, page, region, cat, catValue,searchText } = req.query;
-    const data = await tourService.getTourInfoList(contentType, page, region, cat, catValue,searchText);
+    const { contenttypeid, page, region, cat, catValue,searchText } = req.query;
+    const data = await tourService.getTourInfoList(contenttypeid, page, region, cat, catValue,searchText);
 
     res.status(200).json({message: 'ok', data});
+}
+
+const getTourInfoDetail = async (req, res) => {
+    const { contentid } = req.params;
+    const { contenttypeid } = req.query;
+
+    const data = await tourService.getTourInfoDetail(contentid, contenttypeid);
+
+    res.status(200).json({message: '상세페이지 조회 성공', data});
 }
 
 module.exports = {
@@ -42,5 +51,6 @@ module.exports = {
     getTourPlanData,
     saveTourInfo,
     insertTourPlan,
-    getTourInfoList
+    getTourInfoList,
+    getTourInfoDetail
 }

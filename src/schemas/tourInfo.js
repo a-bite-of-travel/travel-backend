@@ -13,6 +13,8 @@ const tourInfoSchema = new Schema({
     tel: String,
     title: String,
     sigungucode: String,
+    overview: String,
+    homepage: String,
     detailinfo: Object
 }, {collection: 'tourInfo'});
 
