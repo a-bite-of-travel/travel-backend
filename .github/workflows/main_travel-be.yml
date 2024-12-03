@@ -60,6 +60,7 @@ jobs:
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID }}
         env:
           ACTIONS_STEP_DEBUG: true
+          ACTIONS_RUNNER_DEBUG: true
 
       - uses: azure/webapps-deploy@v3
         with:
