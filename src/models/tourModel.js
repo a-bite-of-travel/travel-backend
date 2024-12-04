@@ -22,11 +22,11 @@ const updateTourInfo = async (cond, contentId) => {
 }
 
 // 여행지 정보 출력
-const selectTourInfoList = async (cond, skip) => {
+const selectTourInfoList = async (cond, skip, limit) => {
     return await tourInfoModel.find(cond)
         .sort({title: 1})
         .skip(skip)
-        .limit(5);
+        .limit(limit);
 }
 
 // 여행지 상세 정보 출력
