@@ -18,7 +18,7 @@ const register = async (userData) => {
     userData.password = await bcrypt.hash(password, 10);
     const user = await userModel.createUser(userData);
 
-    return { email: user.email, nickName: user.nickName, joinedDate: user.joinedDate }
+    return { email: user.email, nickName: user.nickName, joinedDate: user.joinedDate , profileImage: user.profileImage}
 }
 
 const existingUserFunc = async (email) => {
