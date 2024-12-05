@@ -40,7 +40,7 @@ const gptAI = async (region, period, theme, data, prompt) => {
                 2. 여행 데이터에 있는 contentid로 배열을 만들기
                 3. 생성된 일정에 대해서 250자 내외로 설명 작성
                 4. 기간이 하루일 경우 배열 하나, 1박 2일 경우 배열 2개, 2박 3일은 배열 3개 반환
-                5. 최종 응답 형태 (아래의 응답 형태 외의 답변은 금지, 주석 작성 절대 금지)
+                5. 최종 응답 형태 (아래의 응답 형태 외의 답변은 금지, 배열 값 뒤에 주석 작성 절대 금지, 백틱도 금지)
                  - result는 contentid로 이루어진 배열임 
                  {
                    summary: "설명",
@@ -65,7 +65,7 @@ const gptAI = async (region, period, theme, data, prompt) => {
                 요청사항: 
                 1. detailinfo를 제외한 나머지 값들은 그대로 반환하며, 주차 가능 여부(isParking)과 운영 여부(isOpen) 필드를 추가해서
                 boolean Type으로 표현해줘
-                2. json 데이터 외에 다른 응답은 금지
+                2. json 데이터 외에 다른 응답은 금지 
               
             `},
             {"role": "user", "content": "데이터 " + JSON.stringify(data) }
@@ -83,6 +83,30 @@ const gptAI = async (region, period, theme, data, prompt) => {
     return res.data.choices[0].message;
 }
 
+// 카카오 키워드 검색 api
+const kakaoApi = async (x, y, title) => {
+    const url = `https://dapi.kakao.com/v2/local/search/keyword.json?y=${y}&x=${x}&radius=10000`
+
+    const res = await axios.get(url, {
+        headers: {
+            Authorization: `KakaoAK ${process.env.KAKAO_API_KEY}`
+        },
+        params: {
+            query: title
+        },
+    });
+
+    console.log('res.data.documents.length >>>>>>>>>>>>>>>>>>>> ', res.data.documents.length);
+
+    // console.log('KakaoAKKakaoAKKakaoAK >>>>>>>>>>>>>>>>>>> ', res.data);
+
+    if(res.data.documents.length > 0) {
+        console.log('test1111111111 >>>>>>>>>>>>>>>>>> ', res.data.documents[0].place_url);
+        return res.data.documents[0].place_url
+    } else
+        return null
+}
+
 module.exports = {
-    tourApi, gptAI
+    tourApi, gptAI, kakaoApi
 }

@@ -1,5 +1,6 @@
-const { tourApi, gptAI } = require('../utils/api');
+const { tourApi, gptAI, kakaoApi } = require('../utils/api');
 const tourModel = require('../models/tourModel');
+const puppeteer = require('puppeteer');
 
 const returnTourInfoMap = (data, type) => {
     return data.map(item => {
@@ -82,9 +83,13 @@ const getTourPlanData = async (sigunguCode, startDate, period, theme) => {
         title: info.title
     }));
 
+    console.log('selectTourInfoList >>>>>>>>>>>>>>> ', selectTourInfoList);
+
+
     if (selectTourInfoList.length > 0) {
-        console.log('sdksldksdl')
         let generatePlanData = await gptAI(sigunguCode.name, period, theme, sendGPTData, 'plan');
+
+        console.log('generatePlanData >>>>>>>>>>>>>>>>>> ', generatePlanData);
 
         // 프론트엔드랑 연동할 땐 아래의 코드 사용
         generatePlanData = JSON.parse(generatePlanData.content.replace(/(\s*)(\w+):/g, '$1"$2":') // 속성 이름에 따옴표 추가
@@ -94,20 +99,7 @@ const getTourPlanData = async (sigunguCode, startDate, period, theme) => {
         // generatePlanData = JSON.parse(generatePlanData.content.replace(/```json/, '').replace(/```/, ''));
 
         let planDataPromises = selectTourInfoList
-            .filter(item => generatePlanData.result.some(arr => arr.includes(item.contentid)))
-            .map(async data => {
-                if (!data.detail) {
-                    const detailIntro = await tourApi(
-                        'detailIntro1',
-                        `&contentId=${data.contentid}&contentTypeId=${data.contenttypeid}`
-                    );
-
-                    const result = detailIntro.map(({ contentid, contenttypeid, ...rest }) => rest);
-
-                    await tourModel.updateTourInfo({ detailinfo: result }, data.contentid);
-                }
-                return data; // 데이터를 반환
-            });
+            .filter(item => generatePlanData.result.some(arr => arr.includes(item.contentid)));
 
         const updatedData = await Promise.all(planDataPromises);
 
@@ -119,16 +111,108 @@ const getTourPlanData = async (sigunguCode, startDate, period, theme) => {
         generatePlanData.result = generatePlanData.result.map(group =>
             group.map(contentid => dataMap[contentid] || null) // 데이터가 없는 경우 null 처리
         );
-
-        let result = await gptAI('', startDate, '', generatePlanData.result, 'detail');
-        generatePlanData.result = JSON.parse(result.content.replace(/^```json\n/, '').replace(/\n```$/, ''));
-
-        console.log('generatePlanData >>>>>>>>>>>>>>>>> ', generatePlanData);
+        console.log('generatePlanData >>>>>>>>>>>>>>>>> ', generatePlanData.result);
         return generatePlanData;
     } else {
         return null;
     }
 };
+
+const showTourInfoDetailWithKaKao = async (x, y, title) => {
+    try {
+        const placeUrl =  await kakaoApi(x, y, title);
+
+        console.log('placeUrlplaceUrl >>>>>>>>>>>>>>>>>>> ', placeUrl);
+        if(placeUrl) {
+            console.log('placeUrlplaceUrl >>>>>>>>>>>>>>>>>>> ', placeUrl);
+            const browser = await puppeteer.launch({ headless: true });
+            const page = await browser.newPage();
+
+            // 페이지 열기
+            await page.goto(placeUrl, { waitUntil: 'networkidle0' });
+
+            // 데이터 추출
+            const placeDetails = await page.evaluate(() => {
+                const getTextContent = (selector) => {
+                    const element = document.querySelector(selector);
+                    return element ? element.innerText.trim() : null;
+                };
+
+                const getListItems = (selector) => {
+                    const elements = document.querySelectorAll(selector);
+                    return Array.from(elements).map(el => el.innerText.trim());
+                };
+
+                const getOperationHours = () => {
+                    const listItems = document.querySelectorAll('.list_operation li');
+                    return Array.from(listItems).map(item => {
+                        const dayElement = item.querySelector('.txt_operation');
+                        const timeElement = item.querySelector('.time_operation');
+                        const day = dayElement ? dayElement.innerText.trim() : null;
+                        const time = timeElement ? timeElement.innerText.trim() : null;
+                        return { day, time };
+                    });
+                };
+
+                const getOffDays = () => {
+                    const offDayContainer = document.querySelector('.displayOffdayList .list_operation');
+                    if (!offDayContainer) return null;
+
+                    const offDays = offDayContainer.querySelectorAll('li');
+                    return Array.from(offDays).map(day => day.innerText.trim());
+                };
+
+                const getMenuItems = () => {
+                    const menuContainer = document.querySelector('div[data-viewid="menuInfo"]');
+                    if (!menuContainer) return null;
+
+                    const menuItems = menuContainer.querySelectorAll('ul.list_menu > li:not(.hide)');
+                    return Array.from(menuItems).map(item => {
+                        const nameElement = item.querySelector('.loss_word');
+                        const priceElement = item.querySelector('.price_menu');
+                        const name = nameElement ? nameElement.innerText.trim() : null;
+                        const price = priceElement ? priceElement.innerText.trim() : null;
+                        return { name, price };
+                    });
+                };
+
+                const getRatingInfo = () => {
+                    const ratingElement = document.querySelector('.grade_star');
+                    if (!ratingElement) return null;
+
+                    const ratingText = getTextContent('.grade_star .num_rate');
+                    const styleWidth = ratingElement.querySelector('.inner_star')?.style.width;
+                    const percentage = styleWidth ? parseFloat(styleWidth) : null;
+
+                    return {
+                        rating: ratingText ? parseFloat(ratingText.split('점')[0]) : null,
+                        starPercentage: percentage
+                    };
+                };
+
+                return {
+                    address: getTextContent('.location_detail .txt_address'),
+                    addressNumber: getTextContent('.location_detail .txt_addrnum'),
+                    operationHours: getOperationHours(),
+                    offDays: getOffDays(),
+                    contactNumber: getTextContent('.num_contact .txt_contact'),
+                    reservationDeliveryPackaging: getTextContent('.placeinfo_default:nth-of-type(5) .location_detail'),
+                    facilities: getListItems('.list_facility li .color_g'),
+                    menu: getMenuItems(),
+                    ratingInfo: getRatingInfo(),
+                    placeUrl
+                };
+            });
+            await browser.close();
+            console.log('placeDetails >>>>>>', placeDetails);
+            return placeDetails;
+        } else {
+            return null
+        }
+    } catch (error) {
+        console.error("크롤링 중 에러 발생: ", error);
+    }
+}
 
 const insertTourPlan = async (data) => {
     return await tourModel.insertTourPlan(data);
@@ -189,5 +273,6 @@ module.exports = {
     insertTourPlan,
     getTourInfoList,
     getTourPlanData,
-    getTourInfoDetail
+    getTourInfoDetail,
+    showTourInfoDetailWithKaKao
 }
