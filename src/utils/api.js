@@ -38,11 +38,13 @@ const gptAI = async (region, period, theme, data, prompt) => {
                 요청사항: 
                 1. 여행지는 하루에 최대 5곳까지만 구성(1박2일일 경우 최대 10곳, 2박 3일일 경우 15곳)
                 2. 여행 데이터에 있는 contentid로 배열을 만들기
-                3. 생성된 일정에 대해서 250자 내외로 설명 작성
-                4. 기간이 하루일 경우 배열 하나, 1박 2일 경우 배열 2개, 2박 3일은 배열 3개 반환
-                5. 최종 응답 형태 (아래의 응답 형태 외의 답변은 금지, 배열 값 뒤에 주석 작성 절대 금지, 백틱도 금지)
+                3. 생성된 일정에 대해서 15자 내외로 제목 작성
+                4. 생성된 일정에 대해서 250자 내외로 설명 작성
+                5. 기간이 하루일 경우 배열 하나, 1박 2일 경우 배열 2개, 2박 3일은 배열 3개 반환
+                6. 최종 응답 형태 (아래의 응답 형태 외의 답변은 금지, 배열 값 뒤에 주석 작성 절대 금지, 백틱도 금지)
                  - result는 contentid로 이루어진 배열임 
                  {
+                   title: "여행제목",
                    summary: "설명",
                    result: [ [], [], [] ]   
                  }
@@ -96,12 +98,7 @@ const kakaoApi = async (x, y, title) => {
         },
     });
 
-    console.log('res.data.documents.length >>>>>>>>>>>>>>>>>>>> ', res.data.documents.length);
-
-    // console.log('KakaoAKKakaoAKKakaoAK >>>>>>>>>>>>>>>>>>> ', res.data);
-
     if(res.data.documents.length > 0) {
-        console.log('test1111111111 >>>>>>>>>>>>>>>>>> ', res.data.documents[0].place_url);
         return res.data.documents[0].place_url
     } else
         return null

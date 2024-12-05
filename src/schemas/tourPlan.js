@@ -5,11 +5,10 @@ const tourPlanSchema = new Schema({
     userId: mongoose.Types.ObjectId,
     startDate: Date,
     period: String,
-    theme: [Object],
-    contentid: [String],
+    theme: String,
+    contentid: [Object],
     title: String,
-    createAt: { type: Date, default: Date.now },
-    updateAt: Date
+    createAt: { type: Date, default: Date.now }
 }, { collection: 'tourPlan'});
 
 module.exports = mongoose.model('TourPlan', tourPlanSchema);
