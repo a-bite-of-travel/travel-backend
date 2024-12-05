@@ -52,3 +52,6 @@ Content-Type: application/json
   "email": "tttt@test.com",
   "password": "admin1234!"
 }
+
+###
+GET http://localhost:3500/tour/plan/detail?x=127.0377755568&y=37.5099674377&title=가나돈까스의집

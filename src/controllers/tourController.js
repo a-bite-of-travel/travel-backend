@@ -46,11 +46,21 @@ const getTourInfoDetail = async (req, res) => {
     res.status(200).json({message: '상세페이지 조회 성공', data});
 }
 
+const showTourInfoDetailWithKaKao = async (req, res) => {
+    const x = req.query.x;
+    const y = req.query.y;
+    const title = req.query.title;
+    const data = await tourService.showTourInfoDetailWithKaKao(x, y, title);
+
+    res.status(200).json({message: '상세 여행 정보 조회 성공', data});
+}
+
 module.exports = {
     getTourCodes,
     getTourPlanData,
     saveTourInfo,
     insertTourPlan,
     getTourInfoList,
-    getTourInfoDetail
+    getTourInfoDetail,
+    showTourInfoDetailWithKaKao
 }

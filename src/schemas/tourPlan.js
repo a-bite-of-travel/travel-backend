@@ -5,7 +5,7 @@ const tourPlanSchema = new Schema({
     userId: mongoose.Types.ObjectId,
     startDate: Date,
     period: String,
-    theme: [Number],
+    theme: [Object],
     contentid: [String],
     title: String,
     createAt: { type: Date, default: Date.now },
