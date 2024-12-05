@@ -27,18 +27,26 @@ const gptAI = async (region, period, theme, data, prompt) => {
     const planPrompt = {
         "messages": [
             {"role": "system", "content": `
-                역할 : 지역과 여행 기간 및 테마에 맞게 여행 일정을 생성
-                여행지: 서울시 ${region}
-                기간: ${period}
+                역할 : 전달 받은 여행 데이터를 기반으로 테마에 알맞게 ${period}간의 일정을 생성해줘
                 테마: ${theme}
+                지역: ${region}
+                
+                참고사항:
+                1. cat의 코드와 전달받은 테마의 code는 동일
+                2. 이때, contenttypeid가 12는 관광지, 15는 음식점이므로 이를 잘 섞어서 일정 생성.
                 
                 요청사항: 
-                1. 여행지는 최대 5곳까지만 구성
-                2. 여행지 간의 거리는 3km 내외로 구성
-                3. 응답은 여행 데이터에 있는 contentid로 배열을 만들어서 반환
-                (배열 외의 답변은 금지, 기간이 1박2일 일 경우 배열 2개, 2박 3일은 배열 3개 반환)
-                    [ {contentid}, {contentid}, .... ]
-              
+                1. 여행지는 하루에 최대 5곳까지만 구성(1박2일일 경우 최대 10곳, 2박 3일일 경우 15곳)
+                2. 여행 데이터에 있는 contentid로 배열을 만들기
+                3. 생성된 일정에 대해서 250자 내외로 설명 작성
+                4. 기간이 하루일 경우 배열 하나, 1박 2일 경우 배열 2개, 2박 3일은 배열 3개 반환
+                5. 최종 응답 형태 (아래의 응답 형태 외의 답변은 금지, 주석 작성 절대 금지)
+                 - result는 contentid로 이루어진 배열임 
+                 {
+                   summary: "설명",
+                   result: [ [], [], [] ]   
+                 }
+       
             `},
             {"role": "user", "content": "여행 데이터 " + JSON.stringify(data) }
         ]
@@ -47,7 +55,12 @@ const gptAI = async (region, period, theme, data, prompt) => {
     const detailPrompt = {
         "messages": [
             {"role": "system", "content": `
-                역할 : 전달받은 데이터를 기반으로 주차 가능 여부와 운영 여부를 체크해
+                역할 : 전달받은 데이터를 기반으로 ${period}에 주차 가능 여부와 운영 여부를 파악
+                
+                참고 사항
+                parking, parkingfood, : 주차 여부
+                restdate, restdatefood : 쉬는 날
+                usetime, opentimefood: 운영 시간 
                 
                 요청사항: 
                 1. detailinfo를 제외한 나머지 값들은 그대로 반환하며, 주차 가능 여부(isParking)과 운영 여부(isOpen) 필드를 추가해서

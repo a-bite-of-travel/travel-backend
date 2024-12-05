@@ -58,13 +58,13 @@ const getTourCodes = async () => {
     }, {});
 }
 
+// 생성된 여행 일정 정보
 const getTourPlanData = async (sigunguCode, startDate, period, theme) => {
+    theme = JSON.parse(theme);
     let themeCode = [];
-    let themeName = [];
 
     for (const item of theme) {
         themeCode.push(item.code);
-        themeName.push(item.name);
     }
 
     let cond = {
@@ -74,14 +74,27 @@ const getTourPlanData = async (sigunguCode, startDate, period, theme) => {
 
     let selectTourInfoList = await tourModel.selectTourInfoList(cond, 0, 0);
 
-    if (selectTourInfoList.length > 0) {
-        let generatePlanData = await gptAI(sigunguCode.name, period, themeName, selectTourInfoList, 'plan');
-        generatePlanData = JSON.parse(generatePlanData.content.replace(/^json\n|\n$/g, ''));
-        // let generatePlanData = ['2456536', '2759626', '2660731', '3076114', '2733970'];
+    const sendGPTData = selectTourInfoList.map(info => ({
+        addr: info.addr,
+        contentid: info.contentid,
+        cat: info.cat,
+        contenttypeid: info.contenttypeid,
+        title: info.title
+    }));
 
-        // 비동기 작업 생성
-        const planDataPromises = selectTourInfoList
-            .filter(item => generatePlanData.includes(item.contentid))
+    if (selectTourInfoList.length > 0) {
+        console.log('sdksldksdl')
+        let generatePlanData = await gptAI(sigunguCode.name, period, theme, sendGPTData, 'plan');
+
+        // 프론트엔드랑 연동할 땐 아래의 코드 사용
+        generatePlanData = JSON.parse(generatePlanData.content.replace(/(\s*)(\w+):/g, '$1"$2":') // 속성 이름에 따옴표 추가
+            .replace(/'/g, '"'));
+
+        // 백엔드 테스트할 때만 실행
+        // generatePlanData = JSON.parse(generatePlanData.content.replace(/```json/, '').replace(/```/, ''));
+
+        let planDataPromises = selectTourInfoList
+            .filter(item => generatePlanData.result.some(arr => arr.includes(item.contentid)))
             .map(async data => {
                 if (!data.detail) {
                     const detailIntro = await tourApi(
@@ -91,16 +104,27 @@ const getTourPlanData = async (sigunguCode, startDate, period, theme) => {
 
                     const result = detailIntro.map(({ contentid, contenttypeid, ...rest }) => rest);
 
-                    return await tourModel.updateTourInfo({ detailinfo: result }, data.contentid);
+                    await tourModel.updateTourInfo({ detailinfo: result }, data.contentid);
                 }
+                return data; // 데이터를 반환
             });
 
-        // 모든 비동기 작업을 기다림
-        const planData = await Promise.all(planDataPromises);
+        const updatedData = await Promise.all(planDataPromises);
 
-        let result = await gptAI(sigunguCode.name, period, themeName, planData, 'detail');
-        return JSON.parse(result.content.replace(/^```json\n/, '').replace(/\n```$/, ''));
+        const dataMap = updatedData.reduce((map, data) => {
+            map[data.contentid] = data;
+            return map;
+        }, {});
 
+        generatePlanData.result = generatePlanData.result.map(group =>
+            group.map(contentid => dataMap[contentid] || null) // 데이터가 없는 경우 null 처리
+        );
+
+        let result = await gptAI('', startDate, '', generatePlanData.result, 'detail');
+        generatePlanData.result = JSON.parse(result.content.replace(/^```json\n/, '').replace(/\n```$/, ''));
+
+        console.log('generatePlanData >>>>>>>>>>>>>>>>> ', generatePlanData);
+        return generatePlanData;
     } else {
         return null;
     }
@@ -130,7 +154,7 @@ const getTourInfoList = async (contenttypeid, page, region, cat, catValue,search
     const skip = 5 * (page - 1);
 
     const totalCount = await tourModel.getTourInfoTotalCount(cond);
-    const tourInfoList = await tourModel.selectTourInfoList(cond, skip);
+    const tourInfoList = await tourModel.selectTourInfoList(cond, skip, 8);
 
     return {items: tourInfoList, totalCount}
 }
