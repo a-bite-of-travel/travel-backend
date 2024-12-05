@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const reviewModel = require('../models/reviewModel');
 const commentModel = require('../schemas/comment');
 
@@ -16,6 +17,11 @@ const findAll = async(page, limit) =>{
 
     return { review, totalPosts, totalPages, current: page }
 }
+
+//유저 리뷰 목록조회
+const findUserReview = async (userId) => {
+    return await reviewModel.findUserReview(userId);
+};
 
 //리뷰 아이디로 조회
 const findPostById = async (id) => {
@@ -68,5 +74,6 @@ module.exports ={
     deletePost,
     createComment,
     updateComment,
-    deleteComment
+    deleteComment,
+    findUserReview
 };
