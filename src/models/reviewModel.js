@@ -1,6 +1,7 @@
 const reviewModel = require('../schemas/review');
 const commentModel = require('../schemas/comment');
 
+
 //리뷰 작성
 const createReview = async (data) => {
     try {
@@ -13,9 +14,15 @@ const createReview = async (data) => {
 };
 
 //리뷰 목록조회
-const findAll = async () => {
-    return await reviewModel.find().select('title content userName imageUrl tags reviewType createdAt comments');
+const findAll = async (data) => {
+    return await reviewModel.find().select(data);
 }
+
+//유저 리뷰 목록조회
+const findUserReview = async (userId) => {
+    return await reviewModel.find({userId});
+};
+
 
 //리뷰 아이디로 조회
 const findPostById = async (id) => {
@@ -67,5 +74,6 @@ module.exports  = {
     deletePost,
     createComment,
     updateComment,
-    deleteComment
+    deleteComment,
+    findUserReview
 };
