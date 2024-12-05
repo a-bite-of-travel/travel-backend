@@ -4,8 +4,12 @@ const ServiceError = require('../middlewares/serviceError');
 const bcrypt = require("bcryptjs");
 require('dotenv').config();
 
-const register = async (userData) => {
+const register = async (userData, profileImage) => {
     let { email, password, ...data } = userData;
+
+    userData.profileImage = profileImage;
+
+    console.log('userData >>>>>>>>>>>>>>>>. ', userData);
 
     const existingUser  = await userModel.findOneUser({email});
 

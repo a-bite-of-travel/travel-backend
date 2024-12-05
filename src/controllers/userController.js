@@ -3,9 +3,10 @@ const userService = require("../services/userService");
 //회원가입
 const register = async (req, res, next) => {
     console.log('register');
+    console.log('req.file.path  >>>>>>>>>>>>>>.. ', req.file.path );
 
     try {
-        const user = await userService.register(req.body);
+        const user = await userService.register(req.body, req.file.path);
         res.status(201).json({ message: '회원가입 성공', data: user});
     } catch (err) {
         next(err);
