@@ -1,16 +1,28 @@
 const reviewModel = require('../schemas/review');
 const commentModel = require('../schemas/comment');
 
+
 //리뷰 작성
-const createReview = async(data) =>{
-    const insertReview = new reviewModel(data);
-    return await insertReview.save();
-}
+const createReview = async (data) => {
+    try {
+        // Review 모델을 사용해 새로운 리뷰를 생성하고 저장
+        const review = new reviewModel(data);
+        return await review.save();
+    } catch (error) {
+        throw new Error('리뷰 생성 중 오류 발생: ' + error.message);
+    }
+};
 
 //리뷰 목록조회
-const findAll = async () => {
-    return await reviewModel.find().select('title content nickName imageUrl tags reviewType createdAt comments');
+const findAll = async (data) => {
+    return await reviewModel.find().select(data);
 }
+
+//유저 리뷰 목록조회
+const findUserReview = async (userId) => {
+    return await reviewModel.find({userId});
+};
+
 
 //리뷰 아이디로 조회
 const findPostById = async (id) => {
@@ -31,6 +43,7 @@ const deletePost = async (id) => {
 const createComment = async (id, data) =>{
     const newComment = new commentModel({
         content: data.content,
+        userName:data.userName,
         reviewId: id
     });
     const savedComment = await newComment.save();
@@ -61,5 +74,6 @@ module.exports  = {
     deletePost,
     createComment,
     updateComment,
-    deleteComment
+    deleteComment,
+    findUserReview
 };
