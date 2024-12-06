@@ -7,7 +7,7 @@ const createReview = async (req, res) => {
         const { title, content, imageUrl, tags, reviewType } = req.body;
 
         // 로그인된 사용자 정보를 가져옵니다.
-        const userId = req.user._id; // 사용자 ID
+        const userId = req.user.id; // 사용자 ID
         const userName = req.user.nickName; // 사용자 닉네임
 
         // 새로운 리뷰 객체 생성
@@ -23,7 +23,8 @@ const createReview = async (req, res) => {
 
         // reviewService를 통해 리뷰 저장
         const savedReview = await reviewService.createReview(newReview);
-
+        
+        console.log(userId);
         res.status(201).json({ message: '리뷰가 성공적으로 생성되었습니다.', review: savedReview });
     } catch (error) {
         res.status(500).json({ message: '리뷰 생성 중 오류가 발생했습니다.', error });
@@ -44,6 +45,17 @@ const findAll = async (req, res) => {
         });
     } catch (e) {
         res.status(500).json({ message: 'error', data: e.message });
+    }
+};
+
+//유저 리뷰 목록조회
+const findUserReview = async (req, res) => {
+    try{
+        const userId = req.params.userId;
+        const post = await reviewService.findUserReview(userId);
+        res.status(200).json({message:'ok', data: post});
+    }catch(e){
+        res.status(500).json({message: 'error', data:e.message});
     }
 };
 
@@ -131,5 +143,6 @@ module.exports ={
     deletePost,
     createComment,
     updateComment,
-    deleteComment 
+    deleteComment,
+    findUserReview 
 }

@@ -9,9 +9,10 @@ Content-Type: application/json
 
 {
   "sigunguCode": {"name":  "강남구", "code":  1},
-  "startDate":  "2024-11-20",
-  "period":  "하루",
-  "theme": [ { "code": "A0202", "name": "신나게놀기" }]
+  "startDate":  "2024-12-05",
+  "period":  "1박 2일",
+  "theme": [ { "code": "A0202", "name": "신나게놀기" }, {"code": "A05020700", "name": "이색음식점"},
+    { "code": "A0101", "name": "자연즐기기"}]
 }
 ###
 GET localhost:3500/tour/info?contenttypeid=관광지&page=1&searchText=치킨
@@ -42,3 +43,15 @@ Content-Type: application/json
   "email": "tttt@test.com",
   "password": "admin1234!"
 }
+
+###
+POST https://travel-be-a3e9g2caa8aadyfx.koreacentral-01.azurewebsites.net/auth.login
+Content-Type: application/json
+
+{
+  "email": "tttt@test.com",
+  "password": "admin1234!"
+}
+
+###
+GET http://localhost:3500/tour/plan/detail?x=127.0377755568&y=37.5099674377&title=가나돈까스의집
