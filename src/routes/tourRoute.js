@@ -3,6 +3,7 @@ const tourController = require('../controllers/tourController');
 
 const route = express.Router();
 
+route.get('/myplan/detail/:id', tourController.selectTourPlanDetail);
 route.get('/plan/detail', tourController.showTourInfoDetailWithKaKao);
 route.post('/data', tourController.saveTourInfo); // 여행정보 데이터베이스에 저장
 route.post('/', tourController.getTourPlanData); // 여행 일정 정보 불러오기
@@ -10,6 +11,7 @@ route.get('/code', tourController.getTourCodes); // 여행 일정 생성에 필�
 route.post('/plan', tourController.insertTourPlan); // 여행일정 저장
 route.get('/info', tourController.getTourInfoList); // 여행정보 목록 가져오기
 route.get('/info/:contentid', tourController.getTourInfoDetail);
+route.get('/myplan/:id', tourController.findByIdTourPlanList);
 
 
 module.exports = route;
