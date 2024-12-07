@@ -48,6 +48,15 @@ const getTourPlanTotalCount = async (cond) => {
     return await tourPlanModel.countDocuments(cond);
 }
 
+// 여행 계획 조회
+const findByIdTourPlanList = async (id) => {
+    return await tourPlanModel.find({userId: id});
+}
+
+const selectTourPlanDetail = async (id) => {
+    return await tourPlanModel.findById(id);
+}
+
 module.exports = {
     selectTourCodeList,
     saveTourInfo,
@@ -56,5 +65,7 @@ module.exports = {
     findOneTourInfo,
     getTourInfoTotalCount,
     insertTourPlan,
-    getTourPlanTotalCount
+    getTourPlanTotalCount,
+    findByIdTourPlanList,
+    selectTourPlanDetail
 }

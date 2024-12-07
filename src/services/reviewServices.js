@@ -20,7 +20,7 @@ const findAll = async(page, limit) =>{
 
 //유저 리뷰 목록조회
 const findUserReview = async (userId) => {
-    return await reviewModel.findUserReview(userId);
+    return await reviewModel.findUserReview(new mongoose.Types.ObjectId(userId));
 };
 
 //리뷰 아이디로 조회
