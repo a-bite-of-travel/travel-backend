@@ -1,6 +1,7 @@
 const { tourApi, gptAI, kakaoApi } = require('../utils/api');
 const tourModel = require('../models/tourModel');
 const puppeteer = require('puppeteer');
+const mongoose = require('mongoose');
 
 const returnTourInfoMap = (data, type) => {
     return data.map(item => {
@@ -268,6 +269,39 @@ const getTourInfoDetail = async (contentid, contenttypeid) => {
     return tourInfoDetail;
 }
 
+// 여행 일정 조회
+const findByIdTourPlanList = async (id) => {
+    return await tourModel.findByIdTourPlanList(new mongoose.Types.ObjectId(id));
+}
+
+const selectTourPlanDetail = async (id) => {
+    const planDetail = await tourModel.selectTourPlanDetail(new mongoose.Types.ObjectId(id));
+
+    const days = await Promise.all(
+        planDetail.contentid.map(async (contentIds, i) => {
+            const dayResult = await Promise.all(
+                contentIds.map(async (contentId) => {
+                    const tourInfo = await tourModel.findOneTourInfo({ contentid: contentId });
+
+                    return {
+                        addr: tourInfo.addr,
+                        firstimage2: tourInfo.firstimage2,
+                        title: tourInfo.title,
+                    };
+                })
+            );
+
+            // day별로 결과 반환
+            return { planTitle: contentIds.title, [`day${i + 1}`]: dayResult };
+        })
+    );
+
+    return {
+        title: planDetail.title,
+        days,
+    };
+};
+
 module.exports = {
     saveTourInfo,
     getTourCodes,
@@ -275,5 +309,7 @@ module.exports = {
     getTourInfoList,
     getTourPlanData,
     getTourInfoDetail,
-    showTourInfoDetailWithKaKao
+    showTourInfoDetailWithKaKao,
+    findByIdTourPlanList,
+    selectTourPlanDetail
 }
