@@ -241,8 +241,20 @@ const getTourInfoList = async (contenttypeid, page, region, cat, catValue,search
 
     const totalCount = await tourModel.getTourInfoTotalCount(cond);
     const tourInfoList = await tourModel.selectTourInfoList(cond, skip, 8);
+    const tourCode = await tourModel.selectTourCodeList({});
 
-    return {items: tourInfoList, totalCount}
+    const updatedTourInfoList = tourInfoList.map(item => {
+        const regionMatch = tourCode.find(code => code.code === item.sigungucode);
+        const themeMatch = tourCode.find(code => code.code === item.cat);
+
+        const plainItem = item.toObject(); // Mongoose 문서를 일반 객체로 변환
+        plainItem.region = regionMatch ? regionMatch.name : '지역 없음';
+        plainItem.theme = themeMatch ? themeMatch.name : '테마 없음';
+
+        return plainItem;
+    });
+
+    return {items: updatedTourInfoList, totalCount}
 }
 
 // 여행지 상세 정보 출력

@@ -57,7 +57,7 @@ Content-Type: application/json
 GET http://localhost:3500/tour/plan/detail?x=127.0377755568&y=37.5099674377&title=가나돈까스의집
 
 ###
-GET localhost:3500/tour/myplan/6752a4b0fe71d42d3e0f1398
+GET 4.217.174.115:3500/tour/myplan/6752a4b0fe71d42d3e0f1398
 
 ###
 GET localhost:3500/tour/myplan/detail/6753f84305e4d2c9d22b305a
