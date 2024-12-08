@@ -65,7 +65,6 @@ const findByIdTourPlanList = async(req, res) => {
 
 const selectTourPlanDetail = async (req, res) => {
     const { id } = req.params;
-    console.log('id>>>>>>>>>>>>>>>>>>>>>> ', id);
     const data = await tourService.selectTourPlanDetail(id);
 
     res.status(200).json({message: '상세 여행 일정 조회 성공', data});
